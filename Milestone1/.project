@@ -24,16 +24,4 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>OrbitOLED</name>
-			<type>2</type>
-			<location>/Users/zebbarry/workspace_v8/OrbitOLED</location>
-		</link>
-		<link>
-			<name>ustdlib.c</name>
-			<type>1</type>
-			<location>/Applications/ti/ccsv8/tools/compiler/ti-cgt-arm_18.1.4.LTS/include/TivaWare_C_Series-2.1.4.178/utils/ustdlib.c</location>
-		</link>
-	</linkedResources>
 </projectDescription>
