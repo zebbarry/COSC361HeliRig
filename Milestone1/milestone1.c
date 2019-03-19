@@ -268,11 +268,11 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
         usnprintf (string, sizeof(string), "Perc ADC = %4d", mappedVal);
     } else if (state == 1)
     {
-        uint16_t mappedVal = map(meanVal, in_min, in_max, in_min, in_max);
+        uint16_t mappedVal = map(meanVal, in_min, in_max, out_min, in_max);
 
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
-        usnprintf (string, sizeof(string), "Mean ADC = %4d", meanVal);
+        usnprintf (string, sizeof(string), "Mean ADC = %4d", mappedVal);
     } else
     {
         // Form a new string for the line.  The maximum width specified for the
@@ -291,7 +291,8 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
 int
 main(void)
 {
-    uint16_t i, slowTickCount;
+    uint16_t i, slowTickCount, mappedVal;
+    uint16_t meanVal = 0;
     int32_t sum;
     uint8_t state = 0; // State variable for altitude unit
     uint8_t init_prog = 1;
@@ -311,19 +312,32 @@ main(void)
     {
         //
         // Background task: calculate the (approximate) mean of the values in the
-        // circular buffer and display it, together with the sample number.
-        sum = 0;
-        for (i = 0; i < BUF_SIZE; i++)
-            sum = sum + readCircBuf (&g_inBuffer);
-        // Calculate and display the rounded mean of the buffer contents
-        uint16_t meanVal = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+        // circular buffer and display it, together with the sample number, as long
+        // as the entire buffer has been written into.
+        if (g_inBuffer.written)
+        {
+            sum = 0;
+            for (i = 0; i < BUF_SIZE; i++)
+                sum = sum + readCircBuf (&g_inBuffer);
+            // Calculate and display the rounded mean of the buffer contents
+            meanVal = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+
+
+            // If start of program, calibrate input
+            if (init_prog)
+            {
+                init_prog = 0;
+                initAltitude(meanVal);
+            }
+        }
+
 
         // Check buttons - LEFT = Reset zero position
         //               - UP   = Switch altitude unit
-        if (checkButton(LEFT) == PUSHED || init_prog)
+        if (checkButton(LEFT) == PUSHED)
         {
             initAltitude (meanVal);
-            init_prog = 0;
+
         }
         if (checkButton(UP) == PUSHED)
         {
@@ -335,14 +349,16 @@ main(void)
             }
         }
 
-        // Is it time to send a message?
+
+        // Time to send a message through UART at set lower frequency
         if (slowTick)
         {
             slowTick = false;
             slowTickCount = ++slowTickCount ? slowTickCount < 2 : 0;
 
+            mappedVal = map(meanVal, in_min, in_max, out_min, in_max);
             // Form and send a status message to the console
-            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", mappedVal); // * usprintf
             UARTSend (statusStr);
 
             // Is it time to update display?

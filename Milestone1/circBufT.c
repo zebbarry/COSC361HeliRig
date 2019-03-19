@@ -21,6 +21,7 @@
 uint32_t *
 initCircBuf (circBuf_t *buffer, uint32_t size)
 {
+    buffer->written = 0;
 	buffer->windex = 0;
 	buffer->rindex = 0;
 	buffer->size = size;
@@ -40,6 +41,7 @@ writeCircBuf (circBuf_t *buffer, uint32_t entry)
 	buffer->windex++;
 	if (buffer->windex >= buffer->size)
 	   buffer->windex = 0;
+	   buffer->written = 1;
 }
 
 // *******************************************************
