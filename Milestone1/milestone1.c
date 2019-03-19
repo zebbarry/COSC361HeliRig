@@ -327,7 +327,7 @@ main(void)
             if (init_prog)
             {
                 init_prog = 0;
-                initAltitude(meanVal);
+                initAltitude(readCircBuf (&g_inBuffer));
             }
         }
 
