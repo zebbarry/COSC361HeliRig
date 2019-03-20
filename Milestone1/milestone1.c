@@ -38,6 +38,7 @@
 #define SYSTICK_RATE_HZ 100
 #define SLOWTICK_RATE_HZ 4
 #define MAX_STR_LEN 16
+#define MAGIC 800
 //---USB Serial comms: UART0, Rx:PA0 , Tx:PA1
 #define BAUD_RATE 9600
 #define UART_USB_BASE           UART0_BASE
@@ -55,8 +56,8 @@ static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample 
 static uint32_t g_ulSampCnt;    // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
-static uint16_t in_min;
-static uint16_t in_max = 4095;
+static uint16_t in_min = 985;
+static uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
 
@@ -208,6 +209,7 @@ void
 initAltitude (meanVal)
 {
     in_min = meanVal;
+    in_max = in_min - MAGIC;
 }
 
 //**********************************************************************
@@ -230,22 +232,9 @@ UARTSend (char *pucBuffer)
 // Function to map ADC input to actual voltage range.
 //
 //*****************************************************************************
-uint16_t map(uint16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t max_out)
+int16_t map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t max_out)
 {
-    uint16_t return_val;
-
-    if (val < min_in)
-    {
-        return_val = min_out;
-    } else if (val > max_in)
-    {
-        return_val = max_out;
-    } else
-    {
-        return_val = (val - min_in) * (max_out - min_out) / (max_in - min_in) + min_out;
-    }
-
-    return return_val;
+    return (val - min_in) * (max_out - min_out) / (max_in - min_in) + min_out;
 }
 
 //*****************************************************************************
@@ -261,18 +250,18 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
     // If displaying percent, map to range 0-100.
     if (state == 0)
     {
-        uint16_t mappedVal = map(meanVal, in_min, in_max, out_min, out_max);
+        int16_t scaledVal = MAGIC - (meanVal - in_max);
+        int16_t mappedVal = map(scaledVal, 0, MAGIC, out_min, out_max);
 
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
         usnprintf (string, sizeof(string), "Perc ADC = %4d", mappedVal);
     } else if (state == 1)
     {
-        uint16_t mappedVal = map(meanVal, in_min, in_max, out_min, in_max);
 
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
-        usnprintf (string, sizeof(string), "Mean ADC = %4d", mappedVal);
+        usnprintf (string, sizeof(string), "Mean ADC = %4d", meanVal);
     } else
     {
         // Form a new string for the line.  The maximum width specified for the
@@ -291,7 +280,7 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
 int
 main(void)
 {
-    uint16_t i, slowTickCount, mappedVal;
+    uint16_t i, slowTickCount;
     uint16_t meanVal = 0;
     int32_t sum;
     uint8_t state = 0; // State variable for altitude unit
@@ -351,14 +340,13 @@ main(void)
 
 
         // Time to send a message through UART at set lower frequency
-        if (slowTick)
+        if (slowTick && !init_prog)
         {
             slowTick = false;
             slowTickCount = ++slowTickCount ? slowTickCount < 2 : 0;
 
-            mappedVal = map(meanVal, in_min, in_max, out_min, in_max);
             // Form and send a status message to the console
-            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", mappedVal); // * usprintf
+            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
             UARTSend (statusStr);
 
             // Is it time to update display?
