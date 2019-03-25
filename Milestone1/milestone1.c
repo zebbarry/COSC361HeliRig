@@ -35,7 +35,6 @@
 //*****************************************************************************
 #define BUF_SIZE 100
 #define SAMPLE_RATE_HZ 1000
-#define SYSTICK_RATE_HZ 100
 #define SLOWTICK_RATE_HZ 4
 #define MAX_STR_LEN 16
 #define MAGIC 800
@@ -77,7 +76,7 @@ SysTickIntHandler(void)
 
     //
     static uint8_t tickCount = 0;
-    const uint8_t ticksPerSlow = SYSTICK_RATE_HZ / SLOWTICK_RATE_HZ;
+    const uint8_t ticksPerSlow = SAMPLE_RATE_HZ / SLOWTICK_RATE_HZ;
 
     if (++tickCount >= ticksPerSlow)
     {                       // Signal a slow tick
@@ -280,7 +279,7 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
 int
 main(void)
 {
-    uint16_t i, slowTickCount;
+    uint16_t i;
     uint16_t meanVal = 0;
     int32_t sum;
     uint8_t state = 0; // State variable for altitude unit
@@ -343,17 +342,12 @@ main(void)
         if (slowTick && !init_prog)
         {
             slowTick = false;
-            slowTickCount = ++slowTickCount ? slowTickCount < 2 : 0;
 
             // Form and send a status message to the console
             usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
             UARTSend (statusStr);
 
-            // Is it time to update display?
-            if (slowTickCount == 1)
-            {
-                displayMeanVal (meanVal, g_ulSampCnt, state);
-            }
+            displayMeanVal (meanVal, g_ulSampCnt, state);
         }
 
 
