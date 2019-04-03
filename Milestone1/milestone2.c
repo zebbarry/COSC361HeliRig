@@ -47,6 +47,9 @@
 #define UART_USB_GPIO_PIN_RX    GPIO_PIN_0
 #define UART_USB_GPIO_PIN_TX    GPIO_PIN_1
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
+//---Yaw Pin definitions
+#define YAW_PIN_A               GPIO_PIN_0
+#define YAW_PIN_A               GPIO_PIN_1
 
 //*****************************************************************************
 // Global variables
@@ -59,6 +62,9 @@ static uint16_t in_min = 985;
 static uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
+volatile static uint16_t yaw;
+volatile static uint8_t stateA;
+volatile static uint8_t stateB;
 
 //*****************************************************************************
 //
@@ -109,6 +115,19 @@ ADCIntHandler(void)
     // Clean up, clearing the interrupt
     ADCIntClear(ADC0_BASE, 3);
 }
+
+//*****************************************************************************
+//
+// The handler for the pin change interrupts for pin A and B
+//
+//*****************************************************************************
+void
+yawIntHandler(void)
+{
+    uint16_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A);
+    uint16_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B);
+}
+
 
 //*****************************************************************************
 // Initialisation functions for the clock (incl. SysTick), ADC, display
@@ -199,6 +218,21 @@ initUSB_UART (void)
             UART_CONFIG_PAR_NONE);
     UARTFIFOEnable(UART_USB_BASE);
     UARTEnable(UART_USB_BASE);
+}
+
+//********************************************************
+// initYaw - Initialise yaw pins
+//********************************************************
+void
+initYaw (void)
+{
+    // Congifure Pin A and Pin Bfor input WPD
+    GPIOPadConfigSet(GPIO_PORTB_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+    GPIOPadConfigSet(GPIO_PORTB_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+
+    // Set data direction register as input
+    GPIODirModeSet(GPIO_PORTB_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
+    GPIODirModeSet(GPIO_PORTB_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
 }
 
 //********************************************************
