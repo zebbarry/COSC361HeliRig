@@ -64,8 +64,11 @@ static uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
 volatile static uint16_t yaw;
+<<<<<<< HEAD
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
+=======
+>>>>>>> refs/remotes/origin/master
 
 //*****************************************************************************
 //
@@ -325,6 +328,24 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
     OLEDStringDraw (string, 0, 3);
 }
 
+//*****************************************************************************
+//
+// Function to display the mean ADC value (10-bit value, note) and sample count.
+//
+//*****************************************************************************
+void
+displayYaw(uint16_t yaw)
+{
+    char string[17];  // 16 characters across the display
+
+    usnprintf (string, sizeof(string), "Yaw Deg = %4d", yaw);
+
+    // Update line on display, first line.
+    OLEDStringDraw (string, 0, 0);
+
+}
+
+
 
 int
 main(void)
@@ -366,6 +387,7 @@ main(void)
             {
                 init_prog = 0;
                 initAltitude(readCircBuf (&g_inBuffer));
+                yaw = 0;
             }
         }
 
@@ -402,6 +424,7 @@ main(void)
             UARTSend (statusStr);
 
             displayMeanVal (meanVal, g_ulSampCnt, state);
+            displayYaw (yaw);
         }
 
 

@@ -1,0 +1,13 @@
+Milestone 2
+
+2.1
+Pin change interrupts on pins J1-03(PB0) and J1-04(PB1) used to measure quadrature encoding of yaw.
+
+2.2
+Calculate yaw in degrees relative to initial position, clockwise is positive when viewed from above.
+
+2.3
+ADC same as milestone 1
+
+2.4
+Yaw in degrees shown on display
