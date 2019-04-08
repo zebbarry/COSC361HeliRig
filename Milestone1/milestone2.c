@@ -64,11 +64,8 @@ static uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
 volatile static uint16_t yaw;
-<<<<<<< HEAD
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
-=======
->>>>>>> refs/remotes/origin/master
 
 //*****************************************************************************
 //
