@@ -47,6 +47,10 @@
 #define UART_USB_GPIO_PIN_RX    GPIO_PIN_0
 #define UART_USB_GPIO_PIN_TX    GPIO_PIN_1
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
+//---Yaw Pin definitions
+#define YAW_PIN_A               GPIO_PIN_0
+#define YAW_PIN_B               GPIO_PIN_1
+#define YAW_GPIO_BASE           GPIO_PORTB_BASE
 
 //*****************************************************************************
 // Global variables
@@ -60,6 +64,8 @@ static uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
 volatile static uint16_t yaw;
+volatile static uint8_t stateA;
+volatile static uint8_t stateB;
 
 //*****************************************************************************
 //
@@ -110,6 +116,31 @@ ADCIntHandler(void)
     // Clean up, clearing the interrupt
     ADCIntClear(ADC0_BASE, 3);
 }
+
+//*****************************************************************************
+//
+// The handler for the pin change interrupts for pin A and B
+//
+//*****************************************************************************
+void
+yawIntHandler(void)
+{
+    uint8_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A) == YAW_PIN_A;
+    uint8_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B) == YAW_PIN_B;
+
+    if (newStateA != stateA)
+    {
+        yaw++;      // Moving clockwise
+    }
+    else if (newStateB != stateB)
+    {
+        yaw--;      //Moving counterclockwise
+    }
+
+    stateA = newStateB;
+    stateB = newStateB;
+}
+
 
 //*****************************************************************************
 // Initialisation functions for the clock (incl. SysTick), ADC, display
@@ -200,6 +231,24 @@ initUSB_UART (void)
             UART_CONFIG_PAR_NONE);
     UARTFIFOEnable(UART_USB_BASE);
     UARTEnable(UART_USB_BASE);
+}
+
+//********************************************************
+// initYaw - Initialise yaw pins
+//********************************************************
+void
+initYaw (void)
+{
+    // Congifure Pin A and Pin B for input WPD
+    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+
+    // Set data direction register as input
+    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
+    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
+
+    stateA = 0;
+    stateB = 0;
 }
 
 //********************************************************
@@ -363,8 +412,12 @@ main(void)
         {
             slowTick = false;
 
-            // Form and send a status message to the console
+            // Form and send a status message for altitude to the console
             usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+            UARTSend (statusStr);
+
+            // Form and send a status message for yaw to the console
+            usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yaw); // * usprintf
             UARTSend (statusStr);
 
             displayMeanVal (meanVal, g_ulSampCnt, state);
