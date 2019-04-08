@@ -49,7 +49,8 @@
 #define UART_USB_GPIO_PINS      UART_USB_GPIO_PIN_RX | UART_USB_GPIO_PIN_TX
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0
-#define YAW_PIN_A               GPIO_PIN_1
+#define YAW_PIN_B               GPIO_PIN_1
+#define YAW_GPIO_BASE           GPIO_PORTB_BASE
 
 //*****************************************************************************
 // Global variables
@@ -124,8 +125,20 @@ ADCIntHandler(void)
 void
 yawIntHandler(void)
 {
-    uint16_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A);
-    uint16_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B);
+    uint8_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A) == YAW_PIN_A;
+    uint8_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B) == YAW_PIN_B;
+
+    if (newStateA != stateA)
+    {
+        yaw++;      // Moving clockwise
+    }
+    else if (newStateB != stateB)
+    {
+        yaw--;      //Moving counterclockwise
+    }
+
+    stateA = newStateB;
+    stateB = newStateB;
 }
 
 
@@ -226,13 +239,16 @@ initUSB_UART (void)
 void
 initYaw (void)
 {
-    // Congifure Pin A and Pin Bfor input WPD
-    GPIOPadConfigSet(GPIO_PORTB_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
-    GPIOPadConfigSet(GPIO_PORTB_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+    // Congifure Pin A and Pin B for input WPD
+    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
 
     // Set data direction register as input
-    GPIODirModeSet(GPIO_PORTB_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
-    GPIODirModeSet(GPIO_PORTB_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
+    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
+    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
+
+    stateA = 0;
+    stateB = 0;
 }
 
 //********************************************************
@@ -377,8 +393,12 @@ main(void)
         {
             slowTick = false;
 
-            // Form and send a status message to the console
+            // Form and send a status message for altitude to the console
             usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+            UARTSend (statusStr);
+
+            // Form and send a status message for yaw to the console
+            usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yaw); // * usprintf
             UARTSend (statusStr);
 
             displayMeanVal (meanVal, g_ulSampCnt, state);
