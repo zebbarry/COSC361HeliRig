@@ -5,9 +5,7 @@
 // Support for use of the USB UART peripheral on the Tiva
 // C series microcontroller.
 //
-// Author:  Zeb Barry           ID: 79313790
-// Author:  Mitchell Hollows    ID:
-// Author:  Jack Topliss        ID:
+// P.J. Bones UCECE
 // Last modified:   9.4.2019
 //
 // *******************************************************
