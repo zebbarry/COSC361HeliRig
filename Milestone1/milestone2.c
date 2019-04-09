@@ -133,14 +133,13 @@ yawIntHandler(void)
     if (newStateA != stateA)
     {
         yaw++;      // Moving clockwise
+        stateA = newStateB;
     }
     else if (newStateB != stateB)
     {
         yaw--;      //Moving counterclockwise
+        stateB = newStateB;
     }
-
-    stateA = newStateB;
-    stateB = newStateB;
 }
 
 
@@ -241,6 +240,9 @@ initUSB_UART (void)
 void
 initYaw (void)
 {
+    // Enable GPIO Port B
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+
     // Congifure Pin A and Pin B for input WPD
     GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
     GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
@@ -249,8 +251,9 @@ initYaw (void)
     GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
     GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
 
-    stateA = 0;
-    stateB = 0;
+    stateA = GPIOPinRead(YAW_GPIO_BASE, YAW_PIN_A);
+    stateB = GPIOPinRead(YAW_GPIO_BASE, YAW_PIN_B);
+    yaw = 0;
 }
 
 //********************************************************
@@ -385,7 +388,6 @@ main(void)
             {
                 init_prog = false;
                 initAltitude(readCircBuf (&g_inBuffer));
-                yaw = 0;
             }
         }
 
@@ -401,20 +403,17 @@ main(void)
         {
             switch (displayState)
             {
-            case SCALED:
-                displayState = MEAN;
+            case SCALED: displayState = MEAN;
                 break;
-            case MEAN:
-                displayState = CLEAR;
+            case MEAN: displayState = CLEAR;
                 break;
-            case CLEAR:
-                displayState = SCALED;
+            case CLEAR: displayState = SCALED;
                 break;
             }
         }
 
 
-        // Time to send a message through UART at set lower frequency
+        // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)
         {
             slowTick = false;
