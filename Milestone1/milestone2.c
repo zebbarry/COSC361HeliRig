@@ -1,10 +1,13 @@
 //*****************************************************************************
 //
-// milestone2.c - Simple interrupt driven program which samples with AIN9 and
-//              transmits the ADC value through UART0 at 4 Hz.
+// milestone2.c - Interrupt driven program which samples with AIN9 and
+//              transmits the ADC value through UART0 at 4 Hz, while detecting
+//              pin changes on PB0 and PB1 for quadrature decoding.
 //
-// Author:  Zeb Barry
-// Last modified:   19.3.2019
+// Author:  Zeb Barry           ID: 79313790
+// Author:  Mitchell Hollows    ID:
+// Author:  Jack Topliss        ID:
+// Last modified:   9.4.2019
 //
 //*****************************************************************************
 // Based on the 'convert' series from 2016
