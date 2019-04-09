@@ -29,6 +29,7 @@
 #include "circBufT.h"
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "buttons4.h"
+#include "USBUART.h"
 
 //*****************************************************************************
 // Constants
@@ -37,7 +38,8 @@
 #define SAMPLE_RATE_HZ 1000
 #define SLOWTICK_RATE_HZ 4
 #define MAX_STR_LEN 16
-#define MAGIC 800
+#define ALT_RANGE 800                 // Range of voltage for altitude reading
+#define YAW_RATIO 1                   // Conversion ratio from quadrature reading to degrees.
 enum state {SCALED = 0, MEAN, CLEAR}; // State variable for altitude unit
 //---USB Serial comms: UART0, Rx:PA0 , Tx:PA1
 #define BAUD_RATE 9600
@@ -57,11 +59,10 @@ enum state {SCALED = 0, MEAN, CLEAR}; // State variable for altitude unit
 // Global variables
 //*****************************************************************************
 static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-static uint32_t g_ulSampCnt;    // Counter for the interrupts
+static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
-static uint16_t in_min = 985;
-static uint16_t in_max = 1835;
+const uint16_t in_max = 1835;
 const uint16_t out_min = 0;
 const uint16_t out_max = 100;
 volatile static uint16_t yaw;
@@ -210,31 +211,6 @@ initDisplay (void)
 }
 
 //********************************************************
-// initUSB_UART - 8 bits, 1 stop bit, no parity
-//********************************************************
-void
-initUSB_UART (void)
-{
-    //
-    // Enable GPIO port A which is used for UART0 pins.
-    //
-    SysCtlPeripheralEnable(UART_USB_PERIPH_UART);
-    SysCtlPeripheralEnable(UART_USB_PERIPH_GPIO);
-    //
-    // Select the alternate (UART) function for these pins.
-    //
-    GPIOPinTypeUART(UART_USB_GPIO_BASE, UART_USB_GPIO_PINS);
-    GPIOPinConfigure (GPIO_PA0_U0RX);
-    GPIOPinConfigure (GPIO_PA1_U0TX);
-
-    UARTConfigSetExpClk(UART_USB_BASE, SysCtlClockGet(), BAUD_RATE,
-            UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-            UART_CONFIG_PAR_NONE);
-    UARTFIFOEnable(UART_USB_BASE);
-    UARTEnable(UART_USB_BASE);
-}
-
-//********************************************************
 // initYaw - Initialise yaw pins
 //********************************************************
 void
@@ -262,23 +238,7 @@ initYaw (void)
 void
 initAltitude (meanVal)
 {
-    in_min = meanVal;
-    in_max = in_min - MAGIC;
-}
-
-//**********************************************************************
-// Transmit a string via UART0
-//**********************************************************************
-void
-UARTSend (char *pucBuffer)
-{
-    // Loop while there are more characters to send.
-    while(*pucBuffer)
-    {
-        // Write the next character to the UART Tx FIFO.
-        UARTCharPut(UART_USB_BASE, *pucBuffer);
-        pucBuffer++;
-    }
+    in_max = meanVal - ALT_RANGE;
 }
 
 //*****************************************************************************
@@ -304,8 +264,8 @@ displayMeanVal(uint16_t meanVal, uint32_t count)
     // If displaying percent, map to range 0-100.
     if (displayState == SCALED)
     {
-        int16_t scaledVal = MAGIC - (meanVal - in_max);
-        int16_t mappedVal = map(scaledVal, 0, MAGIC, out_min, out_max);
+        int16_t scaledVal = ALT_RANGE - (meanVal - in_max);
+        int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, out_min, out_max);
 
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
@@ -340,7 +300,10 @@ displayYaw(uint16_t yaw)
 {
     char string[17];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "Yaw Deg = %4d", yaw);
+    // Scale yaw into degrees
+    int16_t mappedYaw = (2 * yaw + YAW_RATIO) / 2 / YAW_RATIO;
+
+    usnprintf (string, sizeof(string), "Yaw Deg = %4d", mappedYaw);
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
