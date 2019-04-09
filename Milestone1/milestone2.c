@@ -38,6 +38,7 @@
 #define SLOWTICK_RATE_HZ 4
 #define MAX_STR_LEN 16
 #define MAGIC 800
+enum state {SCALED = 0, MEAN, CLEAR}; // State variable for altitude unit
 //---USB Serial comms: UART0, Rx:PA0 , Tx:PA1
 #define BAUD_RATE 9600
 #define UART_USB_BASE           UART0_BASE
@@ -66,6 +67,7 @@ const uint16_t out_max = 100;
 volatile static uint16_t yaw;
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
+static uint8_t displayState = SCALED;
 
 //*****************************************************************************
 //
@@ -292,12 +294,12 @@ int16_t map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uin
 //
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
+displayMeanVal(uint16_t meanVal, uint32_t count)
 {
     char string[17];  // 16 characters across the display
 
     // If displaying percent, map to range 0-100.
-    if (state == 0)
+    if (displayState == SCALED)
     {
         int16_t scaledVal = MAGIC - (meanVal - in_max);
         int16_t mappedVal = map(scaledVal, 0, MAGIC, out_min, out_max);
@@ -305,13 +307,13 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint8_t state)
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
         usnprintf (string, sizeof(string), "Perc ADC = %4d", mappedVal);
-    } else if (state == 1)
+    } else if (displayState == MEAN)
     {
 
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
         usnprintf (string, sizeof(string), "Mean ADC = %4d", meanVal);
-    } else
+    } else if (displayState == CLEAR)
     {
         // Form a new string for the line.  The maximum width specified for the
         //  number field ensures it is displayed right justified.
@@ -350,8 +352,7 @@ main(void)
     uint16_t i;
     uint16_t meanVal = 0;
     int32_t sum;
-    uint8_t state = 0; // State variable for altitude unit
-    uint8_t init_prog = 1;
+    bool init_prog = true;
 
     initButtons ();
     initClock ();
@@ -382,7 +383,7 @@ main(void)
             // If start of program, calibrate input
             if (init_prog)
             {
-                init_prog = 0;
+                init_prog = false;
                 initAltitude(readCircBuf (&g_inBuffer));
                 yaw = 0;
             }
@@ -398,11 +399,17 @@ main(void)
         }
         if (checkButton(UP) == PUSHED)
         {
-            state++;
-
-            if (state > 2)
+            switch (displayState)
             {
-                state = 0;
+            case SCALED:
+                displayState = MEAN;
+                break;
+            case MEAN:
+                displayState = CLEAR;
+                break;
+            case CLEAR:
+                displayState = SCALED;
+                break;
             }
         }
 
@@ -420,7 +427,7 @@ main(void)
             usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yaw); // * usprintf
             UARTSend (statusStr);
 
-            displayMeanVal (meanVal, g_ulSampCnt, state);
+            displayMeanVal (meanVal, g_ulSampCnt);
             displayYaw (yaw);
         }
 
