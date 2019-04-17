@@ -31,11 +31,13 @@
 void
 yawIntHandler(void)
 {
-    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
-    GPIOIntClear(YAW_PORT_BASE, intStatus);
+    uint32_t intStatusU = GPIOIntStatus(UP_BUT_PORT_BASE, true);
+    uint32_t intStatusD = GPIOIntStatus(DOWN_BUT_PORT_BASE, true);
+    GPIOIntClear(UP_BUT_PORT_BASE, intStatusU);
+    GPIOIntClear(DOWN_BUT_PORT_BASE, intStatusD);
 
-    uint8_t newStateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A) == YAW_PIN_A;
-    uint8_t newStateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B) == YAW_PIN_B;
+    uint8_t newStateA = GPIOPinRead(UP_BUT_PORT_BASE, UP_BUT_PIN) == UP_BUT_PIN;
+    uint8_t newStateB = GPIOPinRead(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN;
 
     if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
     {
@@ -72,11 +74,19 @@ initYaw (void)
 
     // Set and register interrupts for pin A and B.
     GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(UP_BUT_PORT_BASE, UP_BUT_PIN, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
+    GPIOIntRegister(UP_BUT_PORT_BASE, yawIntHandler);
+    GPIOIntRegister(DOWN_BUT_PORT_BASE, yawIntHandler);
+
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
+    GPIOIntEnable(UP_BUT_PORT_BASE, UP_BUT_PIN);
+    GPIOIntEnable(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
 
     // Set initial state.
-    stateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A);
-    stateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B);
+    stateA = GPIOPinRead(UP_BUT_PORT_BASE, UP_BUT_PIN);
+    stateB = GPIOPinRead(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
     yaw = YAW_START;
 }
