@@ -1,17 +1,14 @@
 // *******************************************************
 //
-// buttons4.c
+// yaw.c
 //
-// Support for a set of FOUR specific buttons on the Tiva/Orbit.
-// ENCE361 sample code.
-// The buttons are:  UP and DOWN (on the Orbit daughterboard) plus
-// LEFT and RIGHT on the Tiva.
+// Initialisation files and interrupt handlers for quadrature
+// decoding of a GPIO input signal for the yaw of a helicopter.
 //
-// Note that pin PF0 (the pin for the RIGHT pushbutton - SW2 on
-//  the Tiva board) needs special treatment - See PhilsNotesOnTiva.rtf.
-//
-// P.J. Bones UCECE
-// Last modified:  7.2.2018
+// Author:  Zeb Barry           ID: 79313790
+// Author:  Mitchell Hollows    ID:
+// Author:  Jack Topliss        ID:
+// Last modified:   9.4.2019
 //
 // *******************************************************
 
@@ -34,13 +31,11 @@
 void
 yawIntHandler(void)
 {
-    uint32_t statusE = GPIOIntStatus(GPIO_PORTE_BASE, true);
-    uint32_t statusD = GPIOIntStatus(GPIO_PORTD_BASE, true);
-    GPIOIntClear(GPIO_PORTE_BASE, statusE);
-    GPIOIntClear(GPIO_PORTD_BASE, statusD);
+    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
+    GPIOIntClear(YAW_PORT_BASE, intStatus);
 
-    uint8_t newStateA = GPIOPinRead(GPIO_PORTE_BASE, UP_BUT_PIN) == UP_BUT_PIN;
-    uint8_t newStateB = GPIOPinRead(GPIO_PORTD_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN;
+    uint8_t newStateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A) == YAW_PIN_A;
+    uint8_t newStateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B) == YAW_PIN_B;
 
     if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
     {
@@ -65,7 +60,7 @@ yawIntHandler(void)
 void
 initYaw (void)
 {
-    // Enable GPIO Port B
+    // Enable GPIO Port for yaw.
     SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH);
 
     // Congifure Pin A and Pin B for input WPD
@@ -75,19 +70,13 @@ initYaw (void)
     // Set data direction register as input
     GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
+    // Set and register interrupts for pin A and B.
     GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
-    GPIOIntTypeSet(UP_BUT_PORT_BASE, UP_BUT_PIN | GPIO_PIN_4, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
-    GPIOIntTypeSet(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN | GPIO_PIN_4, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
-
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
-    GPIOIntRegister(UP_BUT_PORT_BASE, yawIntHandler);
-    GPIOIntRegister(DOWN_BUT_PORT_BASE, yawIntHandler);
+    GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
-    GPIOIntEnable(YAW_PORT_BASE, YAW_INT_PIN_A | YAW_INT_PIN_B);
-    GPIOIntEnable(UP_BUT_PORT_BASE, UP_BUT_PIN);
-    GPIOIntEnable(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
-
-    stateA = GPIOPinRead(UP_BUT_PORT_BASE, UP_BUT_PIN);
-    stateB = GPIOPinRead(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
+    // Set initial state.
+    stateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A);
+    stateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B);
     yaw = YAW_START;
 }

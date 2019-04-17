@@ -2,15 +2,16 @@
 #define YAW_H_
 
 // *******************************************************
-// buttons4.h
 //
-// Support for a set of FOUR specific buttons on the Tiva/Orbit.
-// ENCE361 sample code.
-// The buttons are:  UP and DOWN (on the Orbit daughterboard) plus
-// LEFT and RIGHT on the Tiva.
+// yaw.h
 //
-// P.J. Bones UCECE
-// Last modified:  7.2.2018
+// Initialisation files and interrupt handlers for quadrature
+// decoding of a GPIO input signal for the yaw of a helicopter.
+//
+// Author:  Zeb Barry           ID: 79313790
+// Author:  Mitchell Hollows    ID:
+// Author:  Jack Topliss        ID:
+// Last modified:   9.4.2019
 //
 // *******************************************************
 
@@ -28,15 +29,13 @@
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0
 #define YAW_PIN_B               GPIO_PIN_1
-#define YAW_INT_PIN_A           GPIO_INT_PIN_0
-#define YAW_INT_PIN_B           GPIO_INT_PIN_1
 #define YAW_PORT_BASE           GPIO_PORTB_BASE
 #define YAW_SYSCTL_PERIPH       SYSCTL_PERIPH_GPIOB
 
 
-// *******************************************************
+// ****************************************************************************
 // Globals to module
-// *******************************************************
+// ****************************************************************************
 volatile int16_t yaw;
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
@@ -49,9 +48,9 @@ void
 yawIntHandler(void);
 
 
-//********************************************************
+//*****************************************************************************
 // initYaw - Initialise yaw pins
-//********************************************************
+//*****************************************************************************
 void
 initYaw (void);
 
