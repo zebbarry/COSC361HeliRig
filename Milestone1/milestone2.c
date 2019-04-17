@@ -53,7 +53,7 @@ static circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample 
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
-static uint16_t inADC_max = 1835;
+static uint16_t inADC_max;
 volatile static uint16_t yaw;
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
@@ -115,16 +115,20 @@ yawIntHandler(void)
     uint8_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A) == YAW_PIN_A;
     uint8_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B) == YAW_PIN_B;
 
-    if (newStateA != stateA)
+    if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
     {
-        yaw++;      // Moving clockwise
-        stateA = newStateB;
+        if (newStateA != stateA)    // A leads B
+        {
+            yaw--;                  // Moving counterclockwise
+        }
+        else if (newStateB != stateB)   // B leads A
+        {
+            yaw++;                  // Moving clockwise
+        }
     }
-    else if (newStateB != stateB)
-    {
-        yaw--;      //Moving counterclockwise
-        stateB = newStateB;
-    }
+
+    stateA = newStateB;
+    stateB = newStateB;
 }
 
 
@@ -253,7 +257,7 @@ main(void)
             meanVal = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
 
 
-            // If start of program, calibrate input
+            // If start of program, calibrate ADC input
             if (init_prog)
             {
                 init_prog = false;
