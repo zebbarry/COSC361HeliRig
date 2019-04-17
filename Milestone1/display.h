@@ -22,6 +22,7 @@
 //*****************************************************************************
 #define ALT_RANGE 800                 // Range of voltage for altitude reading
 #define YAW_RATIO 1                   // Conversion ratio from quadrature reading to degrees.
+#define YAW_START 65535 / YAW_RATIO    // Middle point for yaw start.
 enum state {SCALED = 0, MEAN, CLEAR}; // State variable for altitude unit
 
 //*****************************************************************************

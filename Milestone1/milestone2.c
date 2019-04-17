@@ -32,6 +32,7 @@
 #include "buttons4.h"
 #include "USBUART.h"
 #include "display.h"
+#include "yaw.h"
 
 //*****************************************************************************
 // Constants
@@ -40,10 +41,6 @@
 #define SAMPLE_RATE_HZ 1000
 #define SLOWTICK_RATE_HZ 4
 #define MAX_STR_LEN 16
-//---Yaw Pin definitions
-#define YAW_PIN_A               GPIO_PIN_0
-#define YAW_PIN_B               GPIO_PIN_1
-#define YAW_GPIO_BASE           GPIO_PORTB_BASE
 
 
 //*****************************************************************************
@@ -54,9 +51,6 @@ static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
 static uint16_t inADC_max;
-volatile static uint16_t yaw;
-volatile static uint8_t stateA;
-volatile static uint8_t stateB;
 static uint8_t displayState = SCALED;
 
 
@@ -104,31 +98,6 @@ ADCIntHandler(void)
     //
     // Clean up, clearing the interrupt
     ADCIntClear(ADC0_BASE, 3);
-}
-
-//*****************************************************************************
-// The handler for the pin change interrupts for pin A and B
-//*****************************************************************************
-void
-yawIntHandler(void)
-{
-    uint8_t newStateA = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_A) == YAW_PIN_A;
-    uint8_t newStateB = GPIOPinRead(GPIO_PORTB_BASE, YAW_PIN_B) == YAW_PIN_B;
-
-    if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
-    {
-        if (newStateA != stateA)    // A leads B
-        {
-            yaw--;                  // Moving counterclockwise
-        }
-        else if (newStateB != stateB)   // B leads A
-        {
-            yaw++;                  // Moving clockwise
-        }
-    }
-
-    stateA = newStateB;
-    stateB = newStateB;
 }
 
 
@@ -192,28 +161,6 @@ initADC (void)
 }
 
 //********************************************************
-// initYaw - Initialise yaw pins
-//********************************************************
-void
-initYaw (void)
-{
-    // Enable GPIO Port B
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-
-    // Congifure Pin A and Pin B for input WPD
-    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
-    GPIOPadConfigSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
-
-    // Set data direction register as input
-    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_A, GPIO_DIR_MODE_IN);
-    GPIODirModeSet(YAW_GPIO_BASE, YAW_PIN_B, GPIO_DIR_MODE_IN);
-
-    stateA = GPIOPinRead(YAW_GPIO_BASE, YAW_PIN_A);
-    stateB = GPIOPinRead(YAW_GPIO_BASE, YAW_PIN_B);
-    yaw = 0;
-}
-
-//********************************************************
 // initAltitude - Calibrate height
 //********************************************************
 void
@@ -234,6 +181,7 @@ main(void)
     initButtons ();
     initClock ();
     initADC ();
+    initYaw ();
     initDisplay ();
     initUSB_UART ();
     initCircBuf (&g_inBuffer, BUF_SIZE);

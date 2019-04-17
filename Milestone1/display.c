@@ -89,7 +89,8 @@ displayYaw(uint16_t yaw)
     char string[17];  // 16 characters across the display
 
     // Scale yaw into degrees
-    int16_t mappedYaw = (2 * yaw + YAW_RATIO) / 2 / YAW_RATIO;
+    uint16_t scaledYaw = yaw / YAW_RATIO;
+    int16_t mappedYaw = scaledYaw - YAW_START;
 
     usnprintf (string, sizeof(string), "Yaw Deg = %4d", mappedYaw);
 
