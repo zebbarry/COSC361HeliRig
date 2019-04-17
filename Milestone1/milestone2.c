@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
+#include "inc/hw_ints.h"
 #include "driverlib/adc.h"
 #include "driverlib/pwm.h"
 #include "driverlib/gpio.h"
@@ -221,7 +222,7 @@ main(void)
             initAltitude (meanVal);
 
         }
-        if (checkButton(UP) == PUSHED)
+        if (checkButton(UP) == PUSHED || checkButton(UP) == RELEASED)
         {
             switch (displayState)
             {

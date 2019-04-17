@@ -49,7 +49,7 @@ yawIntHandler(void)
         }
     }
 
-    stateA = newStateB;
+    stateA = newStateA;
     stateB = newStateB;
 }
 
@@ -68,15 +68,19 @@ initYaw (void)
     GPIOPadConfigSet(YAW_PIN_B, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
 
     // Set data direction register as input
-    GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A);
-    GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_B);
+    GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
-    IntRegister(INT_GPIOB, yawIntHandler);
-    IntRegister(INT_GPIOE, yawIntHandler);
-    IntRegister(INT_GPIOD, yawIntHandler);
-    IntEnable(INT_GPIOB);
-    IntEnable(INT_GPIOE);
-    IntEnable(INT_GPIOD);
+    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(UP_BUT_PORT_BASE, UP_BUT_PIN | GPIO_PIN_4, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN | GPIO_PIN_4, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+
+    GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
+    GPIOIntRegister(UP_BUT_PORT_BASE, yawIntHandler);
+    GPIOIntRegister(DOWN_BUT_PORT_BASE, yawIntHandler);
+
+    GPIOIntEnable(YAW_PORT_BASE, YAW_INT_PIN_A | YAW_INT_PIN_B);
+    GPIOIntEnable(UP_BUT_PORT_BASE, UP_BUT_PIN);
+    GPIOIntEnable(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);
 
     stateA = GPIOPinRead(UP_BUT_PORT_BASE, UP_BUT_PIN);
     stateB = GPIOPinRead(DOWN_BUT_PORT_BASE, DOWN_BUT_PIN);

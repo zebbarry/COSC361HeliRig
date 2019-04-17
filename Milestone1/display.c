@@ -17,6 +17,7 @@
 #include "OrbitOLED/OrbitOLEDInterface.h"
 #include "utils/ustdlib.h"
 #include "display.h"
+#include "yaw.h"
 
 //*****************************************************************************
 // Global variables

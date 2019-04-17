@@ -22,9 +22,14 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
+#define YAW_RATIO 1                   // Conversion ratio from quadrature reading to degrees.
+#define YAW_START 0    // Middle point for yaw start.
+
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0
 #define YAW_PIN_B               GPIO_PIN_1
+#define YAW_INT_PIN_A           GPIO_INT_PIN_0
+#define YAW_INT_PIN_B           GPIO_INT_PIN_1
 #define YAW_PORT_BASE           GPIO_PORTB_BASE
 #define YAW_SYSCTL_PERIPH       SYSCTL_PERIPH_GPIOB
 
@@ -32,7 +37,7 @@
 // *******************************************************
 // Globals to module
 // *******************************************************
-volatile static uint16_t yaw;
+volatile int16_t yaw;
 volatile static uint8_t stateA;
 volatile static uint8_t stateB;
 
