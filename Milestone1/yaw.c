@@ -34,6 +34,11 @@
 void
 yawIntHandler(void)
 {
+    uint32_t statusE = GPIOIntStatus(GPIO_PORTE_BASE, true);
+    uint32_t statusD = GPIOIntStatus(GPIO_PORTD_BASE, true);
+    GPIOIntClear(GPIO_PORTE_BASE, statusE);
+    GPIOIntClear(GPIO_PORTD_BASE, statusD);
+
     uint8_t newStateA = GPIOPinRead(GPIO_PORTE_BASE, UP_BUT_PIN) == UP_BUT_PIN;
     uint8_t newStateB = GPIOPinRead(GPIO_PORTD_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN;
 
