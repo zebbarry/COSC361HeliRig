@@ -23,7 +23,6 @@
 #include "driverlib/interrupt.h"
 #include "yaw.h"
 #include "display.h"
-#include "buttons4.h"
 
 //*****************************************************************************
 // The handler for the pin change interrupts for pin A and B
