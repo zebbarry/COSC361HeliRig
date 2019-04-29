@@ -193,7 +193,7 @@ main(void)
             UARTSend (statusStr);
 
             // Form and send a status message for yaw to the console
-            int16_t yawDeg = mapYaw2Deg(yaw);
+            int16_t yawDeg = mapYaw2Deg();
             usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yawDeg); // * usprintf
             UARTSend (statusStr);
 

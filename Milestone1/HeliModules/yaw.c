@@ -49,11 +49,11 @@ yawIntHandler(void)
     {
         if (newStateA != stateA)    // A leads B
         {
-            yaw--;                  // Moving counterclockwise
+            yaw++;                  // Moving clockwise
         }
         else if (newStateB != stateB)   // B leads A
         {
-            yaw++;                  // Moving clockwise
+            yaw--;                  // Moving counterclockwise
         }
     }
 
@@ -93,8 +93,9 @@ initYaw (void)
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(int16_t yaw)
+mapYaw2Deg(void)
 {
-    return (2*(yaw * YAW_DEG) + YAW_TABS) / 2 / YAW_TABS;
+    int16_t mappedYaw = (2*(yaw * YAW_DEG) + YAW_TABS) / 2 / YAW_TABS;
+    return mappedYaw;
 }
 

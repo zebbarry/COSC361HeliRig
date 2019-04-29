@@ -46,6 +46,6 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState);
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t yaw);
+displayYaw(int16_t scaledYaw);
 
 #endif /*DISPLAY_H_*/

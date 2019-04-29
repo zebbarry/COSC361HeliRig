@@ -83,15 +83,14 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState)
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t yaw)
+displayYaw(int16_t mappedYaw)
 {
     char string[17];  // 16 characters across the display
 
     // Scale yaw into degrees
-    int16_t scaledYaw = (2*(yaw * YAW_DEG) + YAW_TABS) / 2 / YAW_TABS;
-    int16_t mappedYaw = scaledYaw - YAW_START;
+    int16_t scaledYaw = mappedYaw - YAW_START;
 
-    usnprintf (string, sizeof(string), "Yaw Deg  = %5d", mappedYaw);
+    usnprintf (string, sizeof(string), "Yaw Deg  = %5d", scaledYaw);
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
