@@ -8,8 +8,9 @@
 // Support for use of the OrbitOLED display
 //
 // Author:  Zeb Barry           ID: 79313790
-// Author:  Mitchell Hollows    ID:
+// Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID:
+// Group:   Thu am 22
 // Last modified:   9.4.2019
 //
 // *******************************************************
