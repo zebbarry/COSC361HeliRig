@@ -89,6 +89,9 @@ initYaw (void)
     yaw = YAW_START;
 }
 
+//********************************************************
+// mapYaw2Deg - Maps yaw value from raw input to degrees.
+//********************************************************
 int16_t
 mapYaw2Deg(int16_t yaw)
 {
