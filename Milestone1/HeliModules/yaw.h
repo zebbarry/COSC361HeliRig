@@ -25,8 +25,7 @@
 // Constants
 //*****************************************************************************
 #define YAW_TABS 112   // Number of tabs in a full circle.
-#define YAW_DEG 360    // Number of degrees in full circle.
-#define YAW_START 0    // Middle point for yaw start.
+#define DEG_CIRC 360    // Number of degrees in full circle.
 
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0      // PB0
