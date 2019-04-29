@@ -26,6 +26,14 @@
 #include "display.h"
 
 //*****************************************************************************
+// Constants
+//*****************************************************************************
+
+#define YAW_DEG     360
+#define YAW_TABS    112
+
+
+//*****************************************************************************
 // The handler for the pin change interrupts for pin A and B
 //*****************************************************************************
 void
@@ -80,3 +88,10 @@ initYaw (void)
     stateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B);
     yaw = YAW_START;
 }
+
+int16_t
+mapYaw2Deg(int16_t yaw)
+{
+    return (2*(yaw * YAW_DEG) + YAW_TABS) / 2 / YAW_TABS;
+}
+
