@@ -28,8 +28,8 @@
 #define YAW_START 0    // Middle point for yaw start.
 
 //---Yaw Pin definitions
-#define YAW_PIN_A               GPIO_PIN_0
-#define YAW_PIN_B               GPIO_PIN_1
+#define YAW_PIN_A               GPIO_PIN_0  //PB0
+#define YAW_PIN_B               GPIO_PIN_1  //PB1
 #define YAW_PORT_BASE           GPIO_PORTB_BASE
 #define YAW_SYSCTL_PERIPH       SYSCTL_PERIPH_GPIOB
 

@@ -63,8 +63,8 @@ initADC (void)
     ADCSequenceConfigure(ADC0_BASE, 3, ADC_TRIGGER_PROCESSOR, 0);
 
     //
-    // Configure step 0 on sequence 3.  Sample channel 0 (ADC_CTL_CH0) in
-    // single-ended mode (default) and configure the interrupt flag
+    // Configure step 0 on sequence 3.  Sample channel 0 (ADC_CTL_CH9) in
+    // single-ended mode (PE4) and configure the interrupt flag
     // (ADC_CTL_IE) to be set when the sample is done.  Tell the ADC logic
     // that this is the last conversion on sequence 3 (ADC_CTL_END).  Sequence
     // 3 has only one programmable step.  Sequence 1 and 2 have 4 steps, and

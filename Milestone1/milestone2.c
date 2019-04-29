@@ -8,7 +8,7 @@
 // Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID:
 // Group:   Thu am 22
-// Last modified:   9.4.2019
+// Last modified:   29.4.2019
 //
 //*****************************************************************************
 // Based on the 'convert' series from 2016
@@ -164,6 +164,7 @@ main(void)
         if (checkButton(LEFT) == PUSHED)
         {
             initAltitude (meanVal);
+            yaw = 0;
 
         }
         if (checkButton(UP) == PUSHED || checkButton(UP) == RELEASED)
@@ -193,7 +194,7 @@ main(void)
             usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yaw); // * usprintf
             UARTSend (statusStr);
 
-            displayMeanVal (meanVal, g_ulSampCnt, inADC_max, displayState);
+            displayMeanVal (meanVal, inADC_max, displayState);
             displayYaw (yaw);
         }
 

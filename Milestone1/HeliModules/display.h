@@ -40,7 +40,7 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint32_t count, uint16_t inADC_max, uint8_t displayState);
+displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState);
 
 //*****************************************************************************
 // Function to display the yaw value in degrees to display

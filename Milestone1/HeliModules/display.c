@@ -49,7 +49,7 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint32_t count, uint16_t inADC_max, uint8_t displayState)
+displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState)
 {
     char string[17];  // 16 characters across the display
 
@@ -77,9 +77,6 @@ displayMeanVal(uint16_t meanVal, uint32_t count, uint16_t inADC_max, uint8_t dis
 
     // Update line on display.
     OLEDStringDraw (string, 0, 1);
-
-    usnprintf (string, sizeof(string), "Sample # %5d", count);
-    OLEDStringDraw (string, 0, 3);
 }
 
 //*****************************************************************************
