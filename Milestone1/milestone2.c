@@ -117,13 +117,24 @@ initAltitude (meanVal)
     inADC_max = meanVal - ALT_RANGE;
 }
 
+//********************************************************
+// calcMean - Calculate mean ADC from buffer.
+//********************************************************
+uint16_t calcMean(void)
+{
+    uint16_t i;
+    int32_t sum = 0;
+    for (i = 0; i < BUF_SIZE; i++)
+        sum = sum + readCircBuf (&g_inBuffer);
+    // Calculate and display the rounded mean of the buffer contents
+    return (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+}
+
 
 int
 main(void)
 {
-    uint16_t i;
     uint16_t meanVal = 0;
-    int32_t sum;
     bool init_prog = true;
 
     initButtons ();
@@ -146,12 +157,7 @@ main(void)
         // as the entire buffer has been written into.
         if (g_inBuffer.written)
         {
-            sum = 0;
-            for (i = 0; i < BUF_SIZE; i++)
-                sum = sum + readCircBuf (&g_inBuffer);
-            // Calculate and display the rounded mean of the buffer contents
-            meanVal = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-
+            meanVal = calcMean();
 
             // If start of program, calibrate ADC input
             if (init_prog)

@@ -43,7 +43,7 @@ enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
 volatile int16_t yaw;
 volatile static uint32_t currentState;
 volatile static uint32_t previousState;
-volatile static int8_t dir;;
+volatile static int8_t dir;
 
 
 //*****************************************************************************
