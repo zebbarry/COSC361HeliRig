@@ -186,15 +186,15 @@ main(void)
         if (slowTick && !init_prog)
         {
             slowTick = false;
-
+            /*
             // Form and send a status message for altitude to the console
             usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
             UARTSend (statusStr);
-
+*/
             // Form and send a status message for yaw to the console
-            int16_t mappedYaw = mapYaw2Deg();
+            int16_t mappedYaw = mapYaw2Deg();/*
             usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
-            UARTSend (statusStr);
+            UARTSend (statusStr);*/
 
             // Update OLED display with ADC and yaw value.
             displayMeanVal (meanVal, inADC_max, displayState);

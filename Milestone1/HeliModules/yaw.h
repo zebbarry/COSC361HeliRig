@@ -24,8 +24,8 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define YAW_TABS 112   // Number of tabs in a full circle.
-#define DEG_CIRC 360    // Number of degrees in full circle.
+#define YAW_TABS 224      // Number of tabs in a full circle.
+#define DEG_CIRC 360      // Number of degrees in full circle.
 
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0      // PB0
@@ -33,13 +33,17 @@
 #define YAW_PORT_BASE           GPIO_PORTB_BASE
 #define YAW_SYSCTL_PERIPH       SYSCTL_PERIPH_GPIOB
 
+enum direction {CCW = -1, STATIC, CW};
+enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
+
 
 // ****************************************************************************
 // Globals to module
 // ****************************************************************************
 volatile int16_t yaw;
-volatile static uint8_t stateA;
-volatile static uint8_t stateB;
+volatile static uint32_t currentState;
+volatile static uint32_t previousState;
+volatile static int8_t dir;;
 
 
 //*****************************************************************************

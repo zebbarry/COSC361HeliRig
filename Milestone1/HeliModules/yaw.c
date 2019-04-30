@@ -24,6 +24,8 @@
 #include "driverlib/interrupt.h"
 #include "yaw.h"
 #include "display.h"
+#include "USBUART.h"
+#include "utils/ustdlib.h"
 
 
 //*****************************************************************************
@@ -35,23 +37,45 @@ yawIntHandler(void)
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
     GPIOIntClear(YAW_PORT_BASE, intStatus);
 
-    uint8_t newStateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A) == YAW_PIN_A;
-    uint8_t newStateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B) == YAW_PIN_B;
+    currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
-    if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
+    switch (currentState)
     {
-        if (newStateA != stateA)    // A leads B
+    case BOTH_ZERO:      // BA = 00
+        if (previousState == B_ONE)
         {
-            yaw++;                  // Moving clockwise
+            dir = CW;
+        } else {
+            dir = CCW;
         }
-        else if (newStateB != stateB)   // B leads A
+    case A_ONE:          // BA = 01
+        if (previousState == BOTH_ZERO)
         {
-            yaw--;                  // Moving counterclockwise
+            dir = CW;
+        } else {
+            dir = CCW;
+        }
+    case B_ONE:          // BA = 10
+        if (previousState == BOTH_ONE)
+        {
+            dir = CW;
+        } else {
+            dir = CCW;
+        }
+    case BOTH_ONE:       // BA = 11
+        if (previousState == A_ONE)
+        {
+            dir = CW;
+        } else {
+            dir = CCW;
         }
     }
+    yaw += dir;
 
-    stateA = newStateA;
-    stateB = newStateB;
+    previousState = currentState;
+    char statusStr[5];
+    usnprintf (statusStr, sizeof(statusStr), "%d\n", currentState);
+    UARTSend (statusStr);
 }
 
 
@@ -72,14 +96,14 @@ initYaw (void)
     GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
     // Set and register interrupts for pin A and B.
-    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES); // | GPIO_RISING_EDGE
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
     // Set initial state.
-    stateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A);
-    stateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B);
+    currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
     yaw = 0;
+    dir = STATIC;
 }
 
 //********************************************************
