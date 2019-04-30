@@ -7,7 +7,7 @@
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID:
+// Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
 // Last modified:   29.4.2019
 //
@@ -92,7 +92,12 @@ mapYaw2Deg(void)
     int16_t scaledYaw = yawDeg % DEG_CIRC;
     int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {
-        mappedYaw = -1 * (scaledYaw % (DEG_CIRC / 2));
+        if (scaledYaw > 0) {
+            mappedYaw = scaledYaw - 360;
+        } else
+        {
+            mappedYaw = scaledYaw + 360;
+        }
     }
     return mappedYaw;
 }

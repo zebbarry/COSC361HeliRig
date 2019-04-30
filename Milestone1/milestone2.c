@@ -6,7 +6,7 @@
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID:
+// Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
 // Last modified:   29.4.2019
 //
@@ -196,6 +196,7 @@ main(void)
             usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
             UARTSend (statusStr);
 
+            // Update OLED display with ADC and yaw value.
             displayMeanVal (meanVal, inADC_max, displayState);
             displayYaw (mappedYaw);
         }
