@@ -24,8 +24,6 @@
 #include "driverlib/interrupt.h"
 #include "yaw.h"
 #include "display.h"
-#include "USBUART.h"
-#include "utils/ustdlib.h"
 
 
 //*****************************************************************************
@@ -41,15 +39,15 @@ yawIntHandler(void)
 
     switch (currentState)
     {
-    case BOTH_ZERO:      // BA = 00
-        if (previousState == B_ONE)
+    case BOTH_ZERO:
+        if (previousState == B_ONE)     // A leads
         {
             dir = CW;
-        } else {
+        } else {                        // B leads, etc.
             dir = CCW;
         }
         break;
-    case A_ONE:          // BA = 01
+    case A_ONE:
         if (previousState == BOTH_ZERO)
         {
             dir = CW;
@@ -57,7 +55,7 @@ yawIntHandler(void)
             dir = CCW;
         }
         break;
-    case BOTH_ONE:       // BA = 11
+    case BOTH_ONE:
         if (previousState == A_ONE)
         {
             dir = CW;
@@ -65,7 +63,7 @@ yawIntHandler(void)
             dir = CCW;
         }
         break;
-    case B_ONE:          // BA = 10
+    case B_ONE:
         if (previousState == BOTH_ONE)
         {
             dir = CW;
@@ -74,8 +72,8 @@ yawIntHandler(void)
         }
         break;
     }
-    yaw += dir;
 
+    yaw += dir;
     previousState = currentState;
 }
 

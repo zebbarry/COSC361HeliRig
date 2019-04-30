@@ -6,10 +6,7 @@
 // sampling of an input for measuring altitude of a
 // helicopter.
 //
-// Author:  Zeb Barry           ID: 79313790
-// Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID: 46510499
-// Group:   Thu am 22
+// P.J. Bones UCECE
 // Last modified:   9.4.2019
 //
 // *******************************************************
@@ -71,7 +68,7 @@ initADC (void)
     // sequence 0 has 8 programmable steps.  Since we are only doing a single
     // conversion using sequence 3 we will only configure step 0.  For more
     // on the ADC sequences and steps, refer to the LM3S1968 datasheet.
-    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, ADC_CTL_CH9 | ADC_CTL_IE |
+    ADCSequenceStepConfigure(ADC0_BASE, 3, 0, HELI_CHANNEL | ADC_CTL_IE |
                              ADC_CTL_END);
 
     //

@@ -68,7 +68,7 @@ updateButtons (void);
 // (PUSHED or RELEASED) has changed since the last call, otherwise returns
 // NO_CHANGE.  The argument butName should be one of constants in the
 // enumeration butStates, excluding 'NUM_BUTS'. Safe under interrupt.
-uint8_t
+enum butStates
 checkButton (uint8_t butName);
 
 #endif /*BUTTONS_H_*/

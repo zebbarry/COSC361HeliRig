@@ -6,12 +6,9 @@
 // heliADC.h
 //
 // Initialisation files and interrupt handlers for ADC
-// sampling of an input for measuring altitude of a
-// helicopter.
-// Author:  Zeb Barry           ID: 79313790
-// Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID: 46510499
-// Group:   Thu am 22
+// sampling of an input.
+//
+// P.J. Bones UCECE
 // Last modified:   9.4.2019
 //
 // *******************************************************
@@ -27,6 +24,7 @@
 // Globals to module
 // ****************************************************************************
 extern circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
+#define HELI_CHANNEL        ADC_CTL_CH9
 
 //*****************************************************************************
 // The handler for the ADC conversion complete interrupt.
