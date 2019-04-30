@@ -120,7 +120,8 @@ initAltitude (meanVal)
 //********************************************************
 // calcMean - Calculate mean ADC from buffer.
 //********************************************************
-uint16_t calcMean(void)
+uint16_t
+calcMean(void)
 {
     uint16_t i;
     int32_t sum = 0;
@@ -128,6 +129,23 @@ uint16_t calcMean(void)
         sum = sum + readCircBuf (&g_inBuffer);
     // Calculate and display the rounded mean of the buffer contents
     return (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+}
+
+void
+handleHMI (uint16_t meanVal)
+{
+    // Form and send a status message for altitude to the console
+    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+    UARTSend (statusStr);
+
+    // Form and send a status message for yaw to the console
+    int16_t mappedYaw = mapYaw2Deg();
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
+    UARTSend (statusStr);
+
+    // Update OLED display with ADC and yaw value.
+    displayMeanVal (meanVal, inADC_max, displayState);
+    displayYaw (mappedYaw);
 }
 
 
@@ -157,7 +175,7 @@ main(void)
         // as the entire buffer has been written into.
         if (g_inBuffer.written)
         {
-            meanVal = calcMean();
+            meanVal = calcMean ();
 
             // If start of program, calibrate ADC input
             if (init_prog)
@@ -194,18 +212,7 @@ main(void)
         {
             slowTick = false;
 
-            // Form and send a status message for altitude to the console
-            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
-            UARTSend (statusStr);
-
-            // Form and send a status message for yaw to the console
-            int16_t mappedYaw = mapYaw2Deg();
-            usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
-            UARTSend (statusStr);
-
-            // Update OLED display with ADC and yaw value.
-            displayMeanVal (meanVal, inADC_max, displayState);
-            displayYaw (mappedYaw);
+            handleHMI (meanVal);
         }
 
 
