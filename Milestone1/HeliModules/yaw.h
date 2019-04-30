@@ -24,7 +24,7 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define YAW_TABS 224      // Number of tabs in a full circle.
+#define YAW_TABS 448      // Number of tabs in a full circle.
 #define DEG_CIRC 360      // Number of degrees in full circle.
 
 //---Yaw Pin definitions

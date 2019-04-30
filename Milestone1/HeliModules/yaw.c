@@ -48,6 +48,7 @@ yawIntHandler(void)
         } else {
             dir = CCW;
         }
+        break;
     case A_ONE:          // BA = 01
         if (previousState == BOTH_ZERO)
         {
@@ -55,13 +56,7 @@ yawIntHandler(void)
         } else {
             dir = CCW;
         }
-    case B_ONE:          // BA = 10
-        if (previousState == BOTH_ONE)
-        {
-            dir = CW;
-        } else {
-            dir = CCW;
-        }
+        break;
     case BOTH_ONE:       // BA = 11
         if (previousState == A_ONE)
         {
@@ -69,13 +64,19 @@ yawIntHandler(void)
         } else {
             dir = CCW;
         }
+        break;
+    case B_ONE:          // BA = 10
+        if (previousState == BOTH_ONE)
+        {
+            dir = CW;
+        } else {
+            dir = CCW;
+        }
+        break;
     }
     yaw += dir;
 
     previousState = currentState;
-    char statusStr[5];
-    usnprintf (statusStr, sizeof(statusStr), "%d\n", currentState);
-    UARTSend (statusStr);
 }
 
 
