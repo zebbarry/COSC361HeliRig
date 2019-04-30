@@ -131,6 +131,9 @@ calcMean(void)
     return (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
 }
 
+//********************************************************
+// handleHMI - Handle output to UART port and display.
+//********************************************************
 void
 handleHMI (uint16_t meanVal)
 {
