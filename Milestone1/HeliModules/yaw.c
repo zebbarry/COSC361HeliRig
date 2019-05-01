@@ -111,9 +111,9 @@ initYaw (void)
 int16_t
 mapYaw2Deg(void)
 {
+    int16_t mappedYaw;
     int16_t yawDeg = (2*(yaw * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
     int16_t scaledYaw = yawDeg % DEG_CIRC;
-    int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {
         if (scaledYaw > 0) {
             mappedYaw = scaledYaw - 360;

@@ -194,7 +194,6 @@ main(void)
         if (checkButton(LEFT) == PUSHED)
         {
             initAltitude (meanVal);
-
         }
         if (checkButton(UP) == PUSHED || checkButton(UP) == RELEASED)
         {
