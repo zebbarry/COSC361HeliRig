@@ -42,33 +42,33 @@ yawIntHandler(void)
     case BOTH_ZERO:
         if (previousState == B_ONE)     // A leads
         {
-            dir = CW;
-        } else {                        // B leads, etc.
             dir = CCW;
+        } else {                        // B leads, etc.
+            dir = CW;
         }
         break;
     case A_ONE:
         if (previousState == BOTH_ZERO)
         {
-            dir = CW;
-        } else {
             dir = CCW;
+        } else {
+            dir = CW;
         }
         break;
     case BOTH_ONE:
         if (previousState == A_ONE)
         {
-            dir = CW;
-        } else {
             dir = CCW;
+        } else {
+            dir = CW;
         }
         break;
     case B_ONE:
         if (previousState == BOTH_ONE)
         {
-            dir = CW;
-        } else {
             dir = CCW;
+        } else {
+            dir = CW;
         }
         break;
     }
