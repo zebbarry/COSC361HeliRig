@@ -7,9 +7,9 @@
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID:
+// Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
-// Last modified:   9.4.2019
+// Last modified:   29.4.2019
 //
 // *******************************************************
 
@@ -25,13 +25,6 @@
 #include "yaw.h"
 #include "display.h"
 
-//*****************************************************************************
-// Constants
-//*****************************************************************************
-
-#define YAW_DEG     360
-#define YAW_TABS    112
-
 
 //*****************************************************************************
 // The handler for the pin change interrupts for pin A and B
@@ -42,23 +35,46 @@ yawIntHandler(void)
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
     GPIOIntClear(YAW_PORT_BASE, intStatus);
 
-    uint8_t newStateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A) == YAW_PIN_A;
-    uint8_t newStateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B) == YAW_PIN_B;
+    currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
-    if (stateA == 1 && stateB == 1) // Limit yaw to change once every cycle.
+    switch (currentState)
     {
-        if (newStateA != stateA)    // A leads B
+    case BOTH_ZERO:
+        if (previousState == B_ONE)     // A leads
         {
-            yaw++;                  // Moving clockwise
+            dir = CW;
+        } else {                        // B leads, etc.
+            dir = CCW;
         }
-        else if (newStateB != stateB)   // B leads A
+        break;
+    case A_ONE:
+        if (previousState == BOTH_ZERO)
         {
-            yaw--;                  // Moving counterclockwise
+            dir = CW;
+        } else {
+            dir = CCW;
         }
+        break;
+    case BOTH_ONE:
+        if (previousState == A_ONE)
+        {
+            dir = CW;
+        } else {
+            dir = CCW;
+        }
+        break;
+    case B_ONE:
+        if (previousState == BOTH_ONE)
+        {
+            dir = CW;
+        } else {
+            dir = CCW;
+        }
+        break;
     }
 
-    stateA = newStateA;
-    stateB = newStateB;
+    yaw += dir;
+    previousState = currentState;
 }
 
 
@@ -79,14 +95,14 @@ initYaw (void)
     GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
     // Set and register interrupts for pin A and B.
-    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_FALLING_EDGE  | GPIO_RISING_EDGE);
+    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES); // | GPIO_RISING_EDGE
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
     // Set initial state.
-    stateA = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A);
-    stateB = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_B);
-    yaw = YAW_START;
+    currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
+    yaw = 0;
+    dir = STATIC;
 }
 
 //********************************************************
@@ -95,7 +111,17 @@ initYaw (void)
 int16_t
 mapYaw2Deg(void)
 {
-    int16_t mappedYaw = (2*(yaw * YAW_DEG) + YAW_TABS) / 2 / YAW_TABS;
+    int16_t mappedYaw;
+    int16_t yawDeg = (2*(yaw * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
+    int16_t scaledYaw = yawDeg % DEG_CIRC;
+    if (abs(scaledYaw) > (DEG_CIRC / 2)) {
+        if (scaledYaw > 0) {
+            mappedYaw = scaledYaw - 360;
+        } else
+        {
+            mappedYaw = scaledYaw + 360;
+        }
+    }
     return mappedYaw;
 }
 

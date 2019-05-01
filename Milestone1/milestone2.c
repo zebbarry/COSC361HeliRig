@@ -6,7 +6,7 @@
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID:
+// Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
 // Last modified:   29.4.2019
 //
@@ -91,6 +91,7 @@ initClock (void)
     // Set the clock rate to 20 MHz
     SysCtlClockSet (SYSCTL_SYSDIV_10 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
                    SYSCTL_XTAL_16MHZ);
+
     // Allow time for the oscillator to settle down.
     SysCtlDelay(100);
 
@@ -116,13 +117,45 @@ initAltitude (meanVal)
     inADC_max = meanVal - ALT_RANGE;
 }
 
+//********************************************************
+// calcMean - Calculate mean ADC from buffer.
+//********************************************************
+uint16_t
+calcMean(void)
+{
+    uint16_t i;
+    int32_t sum = 0;
+    for (i = 0; i < BUF_SIZE; i++)
+        sum = sum + readCircBuf (&g_inBuffer);
+    // Calculate and display the rounded mean of the buffer contents
+    return (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
+}
+
+//********************************************************
+// handleHMI - Handle output to UART port and display.
+//********************************************************
+void
+handleHMI (uint16_t meanVal)
+{
+    // Form and send a status message for altitude to the console
+    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+    UARTSend (statusStr);
+
+    // Form and send a status message for yaw to the console
+    int16_t mappedYaw = mapYaw2Deg();
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
+    UARTSend (statusStr);
+
+    // Update OLED display with ADC and yaw value.
+    displayMeanVal (meanVal, inADC_max, displayState);
+    displayYaw (mappedYaw);
+}
+
 
 int
 main(void)
 {
-    uint16_t i;
     uint16_t meanVal = 0;
-    int32_t sum;
     bool init_prog = true;
 
     initButtons ();
@@ -145,12 +178,7 @@ main(void)
         // as the entire buffer has been written into.
         if (g_inBuffer.written)
         {
-            sum = 0;
-            for (i = 0; i < BUF_SIZE; i++)
-                sum = sum + readCircBuf (&g_inBuffer);
-            // Calculate and display the rounded mean of the buffer contents
-            meanVal = (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-
+            meanVal = calcMean ();
 
             // If start of program, calibrate ADC input
             if (init_prog)
@@ -166,8 +194,6 @@ main(void)
         if (checkButton(LEFT) == PUSHED)
         {
             initAltitude (meanVal);
-            yaw = 0;
-
         }
         if (checkButton(UP) == PUSHED || checkButton(UP) == RELEASED)
         {
@@ -188,17 +214,7 @@ main(void)
         {
             slowTick = false;
 
-            // Form and send a status message for altitude to the console
-            usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
-            UARTSend (statusStr);
-
-            // Form and send a status message for yaw to the console
-            int16_t yawDeg = mapYaw2Deg();
-            usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", yawDeg); // * usprintf
-            UARTSend (statusStr);
-
-            displayMeanVal (meanVal, inADC_max, displayState);
-            displayYaw (yawDeg);
+            handleHMI (meanVal);
         }
 
 
