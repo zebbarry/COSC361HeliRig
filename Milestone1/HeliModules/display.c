@@ -49,31 +49,16 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState)
+displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 {
     char string[17];  // 16 characters across the display
 
-    // If displaying percent, map to range 0-100.
-    if (displayState == SCALED)
-    {
-        int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
-        int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
+    int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
+    int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
 
-        // Form a new string for the line.  The maximum width specified for the
-        //  number field ensures it is displayed right justified.
-        usnprintf (string, sizeof(string), "Perc ADC = %5d", mappedVal);
-    } else if (displayState == MEAN)
-    {
-
-        // Form a new string for the line.  The maximum width specified for the
-        //  number field ensures it is displayed right justified.
-        usnprintf (string, sizeof(string), "Mean ADC = %5d", meanVal);
-    } else if (displayState == CLEAR)
-    {
-        // Form a new string for the line.  The maximum width specified for the
-        //  number field ensures it is displayed right justified.
-        usnprintf (string, sizeof(string), "                ");
-    }
+    // Form a new string for the line.  The maximum width specified for the
+    //  number field ensures it is displayed right justified.
+    usnprintf (string, sizeof(string), "Perc ADC = %5d", mappedVal);
 
     // Update line on display.
     OLEDStringDraw (string, 0, 1);

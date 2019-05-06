@@ -41,7 +41,7 @@
 //*****************************************************************************
 #define BUF_SIZE 100
 #define SAMPLE_RATE_HZ 1000
-#define SLOWTICK_RATE_HZ 4
+#define SLOWTICK_RATE_HZ 5
 #define MAX_STR_LEN 16
 
 
@@ -53,7 +53,6 @@ static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
 static uint16_t inADC_max;
-static uint8_t displayState = SCALED;
 
 
 //*****************************************************************************
@@ -117,19 +116,6 @@ initAltitude (meanVal)
     inADC_max = meanVal - ALT_RANGE;
 }
 
-//********************************************************
-// calcMean - Calculate mean ADC from buffer.
-//********************************************************
-uint16_t
-calcMean(void)
-{
-    uint16_t i;
-    int32_t sum = 0;
-    for (i = 0; i < BUF_SIZE; i++)
-        sum = sum + readCircBuf (&g_inBuffer);
-    // Calculate and display the rounded mean of the buffer contents
-    return (2 * sum + BUF_SIZE) / 2 / BUF_SIZE;
-}
 
 //********************************************************
 // handleHMI - Handle output to UART port and display.
@@ -147,7 +133,7 @@ handleHMI (uint16_t meanVal)
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
-    displayMeanVal (meanVal, inADC_max, displayState);
+    displayMeanVal (meanVal, inADC_max);
     displayYaw (mappedYaw);
 }
 
@@ -178,33 +164,13 @@ main(void)
         // as the entire buffer has been written into.
         if (g_inBuffer.written)
         {
-            meanVal = calcMean ();
+            meanVal = calcMean (&g_inBuffer, BUF_SIZE);
 
             // If start of program, calibrate ADC input
             if (init_prog)
             {
                 init_prog = false;
                 initAltitude(readCircBuf (&g_inBuffer));
-            }
-        }
-
-
-        // Check buttons - LEFT = Reset zero position
-        //               - UP   = Switch altitude unit
-        if (checkButton(LEFT) == PUSHED)
-        {
-            initAltitude (meanVal);
-        }
-        if (checkButton(UP) == PUSHED || checkButton(UP) == RELEASED)
-        {
-            switch (displayState)
-            {
-            case SCALED: displayState = MEAN;
-                break;
-            case MEAN: displayState = CLEAR;
-                break;
-            case CLEAR: displayState = SCALED;
-                break;
             }
         }
 
