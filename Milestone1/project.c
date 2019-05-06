@@ -151,6 +151,8 @@ main(void)
     initDisplay ();
     initUSB_UART ();
     initCircBuf (&g_inBuffer, BUF_SIZE);
+    initialisePWMMain ();
+    initialisePWMTail ();
 
     //
     // Enable interrupts to the processor.
