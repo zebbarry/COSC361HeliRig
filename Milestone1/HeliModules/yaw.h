@@ -30,8 +30,11 @@
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0      // PB0
 #define YAW_PIN_B               GPIO_PIN_1      // PB1
+#define YAW_PIN_REF             GPIO_PIN_4      // PC4
 #define YAW_PORT_BASE           GPIO_PORTB_BASE
+#define YAW_PORT_BASE_REF       GPIO_PORTC_BASE
 #define YAW_SYSCTL_PERIPH       SYSCTL_PERIPH_GPIOB
+#define YAW_SYSCTL_PERIPH_REF   SYSCTL_PERIPH_GPIOC
 
 enum direction {CCW = -1, STATIC, CW};
 enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
@@ -52,6 +55,11 @@ volatile static int8_t dir;
 void
 yawIntHandler(void);
 
+//*****************************************************************************
+// The handler for the reference pin change for PC4.
+//*****************************************************************************
+void
+yawRefIntHandler(void);
 
 //*****************************************************************************
 // initYaw - Initialise yaw pins

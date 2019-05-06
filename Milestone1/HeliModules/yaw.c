@@ -77,6 +77,17 @@ yawIntHandler(void)
     previousState = currentState;
 }
 
+//*****************************************************************************
+// The handler for the reference pin change for PC4.
+//*****************************************************************************
+void
+yawRefIntHandler(void)
+{
+    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
+    GPIOIntClear(YAW_PORT_BASE, intStatus);
+
+    yaw = 0;
+}
 
 //********************************************************
 // initYaw - Initialise yaw pins
@@ -87,17 +98,24 @@ initYaw (void)
     // Enable GPIO Port for yaw.
     SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH);
 
-    // Congifure Pin A and Pin B for input WPD
+    // Congifure Pin A, Pin B and Ref Pin for input WPD
     GPIOPadConfigSet(YAW_PIN_A, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
     GPIOPadConfigSet(YAW_PIN_B, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
+    GPIOPadConfigSet(YAW_PIN_REF, YAW_PIN_REF, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
 
     // Set data direction register as input
     GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
+    GPIOPinTypeGPIOInput(YAW_PORT_BASE_REF, YAW_PIN_REF);
 
     // Set and register interrupts for pin A and B.
     GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES); // | GPIO_RISING_EDGE
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
+
+    // Set and register interrupts for Ref Pin
+    GPIOIntTypeSet(YAW_PORT_BASE_REF, YAW_PIN_REF, GPIO_RISING_EDGE); // | GPIO_RISING_EDGE
+    GPIOIntRegister(YAW_PORT_BASE_REF, yawRefIntHandler);
+    GPIOIntEnable(YAW_PORT_BASE_REF, YAW_PIN_REF);
 
     // Set initial state.
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);

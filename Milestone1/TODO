@@ -1,13 +1,46 @@
-Milestone 2
+Project
 
-2.1
-Pin change interrupts on pins J1-03(PB0) and J1-04(PB1) used to measure quadrature encoding of yaw.
+PA7 - switch
+PA6 - reset
+PC4 - yaw ref
 
-2.2
-Calculate yaw in degrees relative to initial position, clockwise is positive when viewed from above.
 
-2.3
-ADC same as milestone 1
+2.0
+At the start (spec 5) helicopter should move to yaw ref point. - active HIGH
 
-2.4
-Yaw in degrees shown on display
+4.0
+Two ouput PWM signals with configurable duty cycle and fixedfreq between 150 and 300 Hz.
+Main rotor on M0PWM7
+Tail rotor on M1PWM5
+
+5.0
+SW1 slider switch as state controller. UP is HIGH
+DOWN - landing or landed
+UP - taking off or flying
+Ignore any changes when trying to land. It should land smoothly facing reference position.
+Should take offf when state is CHANGED from down to up when landed. Should start by turning all rotors on and
+rotating to ref position. Initially should be in landed state with all motors off.
+
+6.0
+Buttons control flight
+UP and DOWN - change altitude by 10% each push. If within 10% of max or min alt,
+move to that point and ignore any further pushes in that direction.
+
+LEFT and RIGHT - change angle by 15% each push. (CCW - LEFT, CW - RIGHT).
+Buttons should only affect their output, ie UP shoudl not change yaw.
+
+7.0
+Push button signals should be asserted for at least 200ms.
+
+8.0
+Operation of the RESET button calls the SysCtlReset() in driverlib/sysctl.h
+
+9.0
+Should have realtime foreground/background kernel on round robin basis. Robust behaviour at all times.
+
+10.0
+Flight should be controlled by PI or PID controller.
+
+11.0
+Information on rotor duty cycles, altitude, yaw and state should be transmitted via UART.
+No less than 4Hz.

@@ -55,6 +55,7 @@ extern uint32_t __STACK_TOP;
 //
 //*****************************************************************************
 extern void yawIntHandler(void);
+extern void yawRefIntHandler(void);
 
 //*****************************************************************************
 //
@@ -85,7 +86,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // The SysTick handler
     IntDefaultHandler,                      // GPIO Port A
     yawIntHandler,                          // GPIO Port B
-    IntDefaultHandler,                      // GPIO Port C
+    yawRefIntHandler,                      // GPIO Port C
     IntDefaultHandler,                      // GPIO Port D
     IntDefaultHandler,                      // GPIO Port E
     IntDefaultHandler,                      // UART0 Rx and Tx
