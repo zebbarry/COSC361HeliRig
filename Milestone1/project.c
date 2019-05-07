@@ -181,7 +181,6 @@ main(void)
             }
         }
 
-
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)
         {
@@ -189,8 +188,6 @@ main(void)
 
             handleHMI (meanVal);
         }
-
-
     }
 }
 

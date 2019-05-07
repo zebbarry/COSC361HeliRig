@@ -9,16 +9,17 @@ PC4 - yaw ref
 At the start (spec 5) helicopter should move to yaw ref point. - active HIGH
 
 4.0
-Two ouput PWM signals with configurable duty cycle and fixedfreq between 150 and 300 Hz.
+Two ouput PWM signals with configurable duty cycle and fixed freq between 150 and 300 Hz.
 Main rotor on M0PWM7
 Tail rotor on M1PWM5
+ - Implemented using motorPower and setPWM.
 
 5.0
 SW1 slider switch as state controller. UP is HIGH
 DOWN - landing or landed
 UP - taking off or flying
 Ignore any changes when trying to land. It should land smoothly facing reference position.
-Should take offf when state is CHANGED from down to up when landed. Should start by turning all rotors on and
+Should take off when state is CHANGED from down to up when landed. Should start by turning all rotors on and
 rotating to ref position. Initially should be in landed state with all motors off.
 
 6.0

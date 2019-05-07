@@ -97,6 +97,7 @@ initYaw (void)
 {
     // Enable GPIO Port for yaw.
     SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH);
+    SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH_REF);
 
     // Congifure Pin A, Pin B and Ref Pin for input WPD
     GPIOPadConfigSet(YAW_PIN_A, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
@@ -108,12 +109,12 @@ initYaw (void)
     GPIOPinTypeGPIOInput(YAW_PORT_BASE_REF, YAW_PIN_REF);
 
     // Set and register interrupts for pin A and B.
-    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES); // | GPIO_RISING_EDGE
+    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES);
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
     // Set and register interrupts for Ref Pin
-    GPIOIntTypeSet(YAW_PORT_BASE_REF, YAW_PIN_REF, GPIO_RISING_EDGE); // | GPIO_RISING_EDGE
+    GPIOIntTypeSet(YAW_PORT_BASE_REF, YAW_PIN_REF, GPIO_RISING_EDGE);
     GPIOIntRegister(YAW_PORT_BASE_REF, yawRefIntHandler);
     GPIOIntEnable(YAW_PORT_BASE_REF, YAW_PIN_REF);
 

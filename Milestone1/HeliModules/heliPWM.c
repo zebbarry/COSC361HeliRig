@@ -58,8 +58,8 @@ initialisePWMMain (rotor_t *rotor)
     // Calculate the PWM period corresponding to the freq.
     ui32Period = SysCtlClockGet() / PWM_DIVIDER / rotor->freq;
 
-    PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM,
+    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
+    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM,
         ui32Period * rotor->duty / 100);
 }
 
