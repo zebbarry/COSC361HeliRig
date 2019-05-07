@@ -218,11 +218,11 @@ main(void)
         {
             desiredAlt -= ALT_STEP_PER;
         }
-        if (checkButton(RIGHT) == PUSHED && desiredYaw < YAW_MAX_DEG)
+        if (checkButton(RIGHT) == PUSHED)
         {
             desiredYaw += YAW_STEP_DEG;
         }
-        if (checkButton(LEFT) == PUSHED && desiredYaw > YAW_MIN_DEG)
+        if (checkButton(LEFT) == PUSHED)
         {
             desiredYaw -= YAW_STEP_DEG;
         }
