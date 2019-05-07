@@ -46,6 +46,18 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 }
 
 //*****************************************************************************
+// Function to map input ADC value to altitude range in percent.
+//*****************************************************************************
+int16_t
+mapAlt(uint16_t meanVal, uint16_t inADC_max)
+{
+    int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
+    int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
+
+    return mappedVal;
+}
+
+//*****************************************************************************
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
@@ -53,8 +65,7 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 {
     char string[17];  // 16 characters across the display
 
-    int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
-    int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
+    int16_t mappedVal = mapAlt(meanVal, inADC_max);
 
     // Form a new string for the line.  The maximum width specified for the
     //  number field ensures it is displayed right justified.

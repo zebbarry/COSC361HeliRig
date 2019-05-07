@@ -127,7 +127,8 @@ void
 handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
-    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \n", meanVal); // * usprintf
+    int16_t mappedVal = mapAlt(meanVal, inADC_max);
+    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \n", mappedVal); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
@@ -135,7 +136,7 @@ handleHMI (uint16_t meanVal)
     usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \n", mappedYaw); // * usprintf
     UARTSend (statusStr);
 
-    usnprintf (statusStr, sizeof(statusStr), "MAIN %d TAIL %d\n", mainRotor.duty, tailRotor.duty); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\n", mainRotor.duty, tailRotor.duty); // * usprintf
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
