@@ -28,7 +28,7 @@ UP and DOWN - change altitude by 10% each push. If within 10% of max or min alt,
 move to that point and ignore any further pushes in that direction.
 
 LEFT and RIGHT - change angle by 15% each push. (CCW - LEFT, CW - RIGHT).
-Buttons should only affect their output, ie UP shoudl not change yaw.
+Buttons should only affect their output, ie UP should not change yaw.
 
 7.0
 Push button signals should be asserted for at least 200ms.

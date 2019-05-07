@@ -30,8 +30,8 @@
 #define PWM_TAIL_FREQ_HZ   200
 #define PWM_START_DUTY_PER 5
 #define PWM_DUTY_STEP_PER  5
-#define PWM_DUTY_MIN_PER   2
-#define PWM_DUTY_MAX_PER   98
+#define PWM_DUTY_MIN_PER   5
+#define PWM_DUTY_MAX_PER   95
 #define PWM_DIVIDER_CODE   SYSCTL_PWMDIV_4
 #define PWM_DIVIDER        4
 

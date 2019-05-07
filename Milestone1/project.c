@@ -36,14 +36,19 @@
 #include "yaw.h"
 #include "heliADC.h"
 #include "heliPWM.h"
+#include "motorControl.h"
 
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define BUF_SIZE 100
-#define SAMPLE_RATE_HZ 1000
-#define SLOWTICK_RATE_HZ 5
-#define MAX_STR_LEN 16
+#define BUF_SIZE            100
+#define SAMPLE_RATE_HZ      1000
+#define SLOWTICK_RATE_HZ    5
+#define MAX_STR_LEN         16
+#define ALT_STEP_PER        10
+#define YAW_STEP_DEG        15
+#define ALT_MAX_PER         100
+#define ALT_MIN_PER         0
 
 
 //*****************************************************************************
@@ -150,8 +155,8 @@ main(void)
 {
     uint16_t meanVal = 0;
     bool init_prog = true;
-    uint16_t desiredHeight = 0;
-    uint16_t desiredAngle = 0;
+    uint16_t desiredAlt = 0;
+    uint16_t desiredYaw = 0;
 
     initButtons ();
     initClock ();
@@ -171,7 +176,6 @@ main(void)
 
     while (1)
     {
-        //
         // Background task: calculate the (approximate) mean of the values in the
         // circular buffer and display it, together with the sample number, as long
         // as the entire buffer has been written into.
@@ -187,6 +191,7 @@ main(void)
             }
         }
 
+        // Change rotor duty cycles
         if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
         {
             mainRotor.duty += PWM_DUTY_STEP_PER;
@@ -204,11 +209,28 @@ main(void)
             tailRotor.duty -= PWM_DUTY_STEP_PER;
         }
 
+        // Change altitude and angle
+        if (checkButton(UP) == PUSHED && desiredAlt < ALT_MAX_PER)
+        {
+            desiredAlt += ALT_STEP_PER;
+        }
+        if (checkButton(DOWN) == PUSHED && desiredAlt > ALT_MIN_PER)
+        {
+            desiredAlt -= ALT_STEP_PER;
+        }
+        if (checkButton(RIGHT) == PUSHED && desiredYaw < YAW_MAX_DEG)
+        {
+            desiredYaw += YAW_STEP_DEG;
+        }
+        if (checkButton(LEFT) == PUSHED && desiredYaw > YAW_MIN_DEG)
+        {
+            desiredYaw -= YAW_STEP_DEG;
+        }
+
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)
         {
             slowTick = false;
-
             handleHMI (meanVal);
         }
     }
