@@ -23,9 +23,10 @@
 void
 updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t yawError)
 {
-    int16_t newMainDuty = altError * P_GAIN_MAIN + altInt * I_GAIN_MAIN;
-    int16_t newTailDuty = yawError * P_GAIN_TAIL + yawInt * I_GAIN_TAIL;
+    int16_t newMainDuty = altError * P_GAIN_MAIN + altInt * I_GAIN_MAIN + HOVER_DUTY_MAIN;
+    int16_t newTailDuty = yawError * P_GAIN_TAIL + yawInt * I_GAIN_TAIL + HOVER_DUTY_TAIL;
 
+    // Check duty cycles are within range
     if (newMainDuty > PWM_DUTY_MAX_PER)
     {
         newMainDuty = PWM_DUTY_MAX_PER;
@@ -43,8 +44,16 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t y
         newTailDuty = PWM_DUTY_MIN_PER;
     }
 
-    mainRotor->duty = newMainDuty;
-    tailRotor->duty = newTailDuty;
+    // Check if the error is small enough to hover.
+    if (altError < 2 && yawError < 2)
+    {
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = HOVER_DUTY_TAIL;
+    } else
+    {
+        mainRotor->duty = newMainDuty;
+        tailRotor->duty = newTailDuty;
+    }
 
     setPWM(mainRotor);
     setPWM(tailRotor);
@@ -58,4 +67,13 @@ integrate(int16_t altError, int16_t yawError)
 {
     altInt += altError;
     yawInt += yawError;
+}
+
+//*****************************************************************************
+// Function to calculate error.
+//*****************************************************************************
+int16_t
+calcError(int16_t desired, int16_t actual)
+{
+    return desired - actual;
 }

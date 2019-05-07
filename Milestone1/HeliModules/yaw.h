@@ -43,6 +43,7 @@ enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
 // Globals to module
 // ****************************************************************************
 volatile int16_t yaw;
+volatile static bool hitYawRef;
 volatile static uint32_t currentState;
 volatile static uint32_t previousState;
 volatile static int8_t dir;
@@ -70,6 +71,6 @@ initYaw (void);
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(void);
+mapYaw2Deg(int16_t yawVal);
 
 #endif /*YAW_H_*/

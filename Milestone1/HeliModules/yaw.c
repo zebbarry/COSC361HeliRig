@@ -87,6 +87,7 @@ yawRefIntHandler(void)
     GPIOIntClear(YAW_PORT_BASE, intStatus);
 
     yaw = 0;
+    hitYawRef = true;
 }
 
 //********************************************************
@@ -128,9 +129,9 @@ initYaw (void)
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(void)
+mapYaw2Deg(int16_t yawVal)
 {
-    int16_t yawDeg = (2*(yaw * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
+    int16_t yawDeg = (2*(yawVal * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
     int16_t scaledYaw = yawDeg % DEG_CIRC;
     int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {

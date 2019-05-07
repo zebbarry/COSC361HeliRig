@@ -137,7 +137,7 @@ handleHMI (uint16_t meanVal)
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
-    int16_t mappedYaw = mapYaw2Deg();
+    int16_t mappedYaw = mapYaw2Deg(yaw);
     usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \n", mappedYaw); // * usprintf
     UARTSend (statusStr);
 
@@ -221,10 +221,12 @@ main(void)
         if (checkButton(RIGHT) == PUSHED)
         {
             desiredYaw += YAW_STEP_DEG;
+            desiredYaw = mapYaw2Deg(desiredYaw * YAW_TABS);
         }
         if (checkButton(LEFT) == PUSHED)
         {
             desiredYaw -= YAW_STEP_DEG;
+            desiredYaw = mapYaw2Deg(desiredYaw * YAW_TABS);
         }
 
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
