@@ -35,6 +35,7 @@
 #include "display.h"
 #include "yaw.h"
 #include "heliADC.h"
+#include "heliPWM.h"
 
 //*****************************************************************************
 // Constants
@@ -53,6 +54,8 @@ static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
 char statusStr[MAX_STR_LEN + 1];
 static uint16_t inADC_max;
+rotor_t mainRotor;
+rotor_t tailRotor;
 
 
 //*****************************************************************************
@@ -151,8 +154,8 @@ main(void)
     initDisplay ();
     initUSB_UART ();
     initCircBuf (&g_inBuffer, BUF_SIZE);
-    initialisePWMMain ();
-    initialisePWMTail ();
+    initialisePWMMain (&mainRotor);
+    initialisePWMTail (&tailRotor);
 
     //
     // Enable interrupts to the processor.

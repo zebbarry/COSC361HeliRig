@@ -58,26 +58,40 @@
 #define PWM_TAIL_GPIO_PIN    GPIO_PIN_1
 
 enum motor {MAIN = 0, TAIL};
-enum control {OFF = 0, ON};
+
+// *******************************************************
+// Rotor structure
+typedef struct {
+    bool        state;
+    uint32_t    freq;
+    uint32_t    duty;
+    enum motor  type;  // MAIN or TAIL
+} rotor_t;
 
 /*********************************************************
  * initialisePWMMain
  * M0PWM7 (J4-05, PC5) is used for the main rotor motor
  *********************************************************/
 void
-initialisePWMMain (void);
+initialisePWMMain (rotor_t *rotor);
 
 /*********************************************************
  * initialisePWMTail
  * M1PWM5 (J3-10, PF1) is used for the tail rotor motor
  *********************************************************/
 void
-initialisePWMTail (void);
+initialisePWMTail (rotor_t *rotor);
 
 /********************************************************
  * Function to set the freq, duty cycle of M0PWM7
  ********************************************************/
 void
-setPWM (uint32_t ui32Freq, uint32_t ui32Duty);
+setPWM (rotor_t *rotor);
 
-#endif /* HELIMODULES_HELIPWM_H_ */
+/********************************************************
+ * Function to set the power for a rotor.
+ ********************************************************/
+void
+motorPower(rotor_t *rotor);
+
+#endif /* HELIPWM_H_ */
