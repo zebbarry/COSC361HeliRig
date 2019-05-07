@@ -127,12 +127,15 @@ void
 handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
-    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \r\n", meanVal); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \n", meanVal); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
     int16_t mappedYaw = mapYaw2Deg();
-    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \r\n", mappedYaw); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \n", mappedYaw); // * usprintf
+    UARTSend (statusStr);
+
+    usnprintf (statusStr, sizeof(statusStr), "MAIN %d TAIL %d\n", mainRotor.duty, tailRotor.duty); // * usprintf
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
@@ -146,6 +149,8 @@ main(void)
 {
     uint16_t meanVal = 0;
     bool init_prog = true;
+    uint16_t desiredHeight = 0;
+    uint16_t desiredAngle = 0;
 
     initButtons ();
     initClock ();
@@ -179,6 +184,23 @@ main(void)
                 init_prog = false;
                 initAltitude(readCircBuf (&g_inBuffer));
             }
+        }
+
+        if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
+        {
+            mainRotor.duty += PWM_DUTY_STEP_PER;
+        }
+        if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
+        {
+            mainRotor.duty -= PWM_DUTY_STEP_PER;
+        }
+        if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
+        {
+            tailRotor.duty += PWM_DUTY_STEP_PER;
+        }
+        if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
+        {
+            tailRotor.duty -= PWM_DUTY_STEP_PER;
         }
 
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
