@@ -92,6 +92,6 @@ setPWM (rotor_t *rotor);
  * Function to set the power for a rotor.
  ********************************************************/
 void
-motorPower(rotor_t *rotor);
+motorPower(rotor_t *rotor, bool power);
 
 #endif /* HELIPWM_H_ */

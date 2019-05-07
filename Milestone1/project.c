@@ -156,6 +156,8 @@ main(void)
     initCircBuf (&g_inBuffer, BUF_SIZE);
     initialisePWMMain (&mainRotor);
     initialisePWMTail (&tailRotor);
+    motorPower(&mainRotor, true);
+    motorPower(&tailRotor, true);
 
     //
     // Enable interrupts to the processor.

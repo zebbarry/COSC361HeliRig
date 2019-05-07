@@ -53,7 +53,7 @@ initialisePWMMain (rotor_t *rotor)
     PWMGenEnable(PWM_MAIN_BASE, PWM_MAIN_GEN);
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
-    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, rotor->freq);
+    PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, rotor->state);
 
     // Calculate the PWM period corresponding to the freq.
     ui32Period = SysCtlClockGet() / PWM_DIVIDER / rotor->freq;
@@ -128,13 +128,15 @@ setPWM (rotor_t *rotor)
  * Function to set the power for a rotor.
  ********************************************************/
 void
-motorPower(rotor_t *rotor)
+motorPower(rotor_t *rotor, bool power)
 {
     if (rotor->type == MAIN)
     {
+        rotor->state = power;
         PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, rotor->state);
     } else if (rotor->type == TAIL)
     {
+        rotor->state = power;
         PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, rotor->state);
     }
 }
