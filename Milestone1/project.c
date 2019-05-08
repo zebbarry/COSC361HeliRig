@@ -63,6 +63,8 @@ rotor_t mainRotor;
 rotor_t tailRotor;
 enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
 static enum state heliState;
+static int16_t desiredAlt = 0;
+static int16_t desiredYaw = 0;
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
@@ -189,7 +191,7 @@ updateDesired(void)
     if (checkButton(RIGHT) == PUSHED)
     {
         desiredYaw += YAW_STEP_DEG;
-        yawErorrInt = 0;
+        yawErrorInt = 0;
         if (desiredYaw > DEG_CIRC / 2)
         {
             desiredYaw -= DEG_CIRC;
@@ -198,7 +200,7 @@ updateDesired(void)
     if (checkButton(LEFT) == PUSHED)
     {
         desiredYaw -= YAW_STEP_DEG;
-        yawErorrInt = 0;
+        yawErrorInt = 0;
         if (desiredYaw < -DEG_CIRC / 2)
         {
             desiredYaw += DEG_CIRC;
@@ -218,8 +220,6 @@ main(void)
 {
     uint16_t meanVal = 0;
     bool init_prog = true;
-    uint16_t desiredAlt = 0;
-    uint16_t desiredYaw = 0;
     int16_t yawError;
     int16_t altError;
     heliState = LANDED;

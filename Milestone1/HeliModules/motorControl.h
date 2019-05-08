@@ -33,8 +33,8 @@
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-static int16_t yawErrorInt;
-static int16_t altErrorInt;
+int16_t yawErrorInt;
+int16_t altErrorInt;
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
