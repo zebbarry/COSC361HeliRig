@@ -44,7 +44,7 @@
 #define BUF_SIZE            100
 #define SAMPLE_RATE_HZ      1000
 #define SLOWTICK_RATE_HZ    5
-#define MAX_STR_LEN         16
+#define MAX_STR_LEN         17
 #define ALT_STEP_PER        10
 #define YAW_STEP_DEG        15
 #define ALT_MAX_PER         100
@@ -139,12 +139,12 @@ handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
-    usnprintf (statusStr, sizeof(statusStr), "ALT = %4d\r\n", mappedVal); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ALT = %3d [%3d]\r\n", mappedVal, desiredAlt); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
     int16_t mappedYaw = mapYaw2Deg(yaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d\r\n", mappedYaw); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d [%4d]\r\n", mappedYaw, desiredYaw); // * usprintf
     UARTSend (statusStr);
 
     usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", mainRotor.duty, tailRotor.duty); // * usprintf

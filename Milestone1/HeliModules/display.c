@@ -64,7 +64,7 @@ mapAlt(uint16_t meanVal, uint16_t inADC_max)
 void
 displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 {
-    char string[17];  // 16 characters across the display
+    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
 
@@ -82,7 +82,7 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 void
 displayYaw(int16_t mappedYaw)
 {
-    char string[17];  // 16 characters across the display
+    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
     usnprintf (string, sizeof(string), "Yaw Deg  = %5d", mappedYaw);
 
@@ -97,7 +97,7 @@ displayYaw(int16_t mappedYaw)
 void
 displayPWM(rotor_t *main, rotor_t *tail)
 {
-    char string[17];  // 16 characters across the display
+    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
     usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d\r\n", main->duty, tail->duty);
 
