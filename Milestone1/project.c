@@ -139,7 +139,7 @@ handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
-    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d\r\n", mappedVal); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ALT = %4d\r\n", mappedVal); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
