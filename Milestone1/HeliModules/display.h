@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "heliPWM.h"
 
 //*****************************************************************************
 // Constants
@@ -52,5 +53,11 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max);
 //*****************************************************************************
 void
 displayYaw(int16_t mappedYaw);
+
+//*****************************************************************************
+// Function to display the PWM for main and tail rotors.
+//*****************************************************************************
+void
+displayPWM(rotor_t *main, rotor_t *tail);
 
 #endif /*DISPLAY_H_*/

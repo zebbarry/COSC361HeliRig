@@ -19,6 +19,7 @@
 #include "utils/ustdlib.h"
 #include "display.h"
 #include "yaw.h"
+#include "heliPWM.h"
 
 //*****************************************************************************
 // Global variables
@@ -87,5 +88,20 @@ displayYaw(int16_t mappedYaw)
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
+
+}
+
+//*****************************************************************************
+// Function to display the PWM for main and tail rotors.
+//*****************************************************************************
+void
+displayPWM(rotor_t *main, rotor_t *tail)
+{
+    char string[17];  // 16 characters across the display
+
+    usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d\r\n", main->duty, tail->duty);
+
+    // Update line on display, first line.
+    OLEDStringDraw (string, 0, 3);
 
 }

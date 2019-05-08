@@ -111,6 +111,9 @@ initClock (void)
     //
     // Register the interrupt handler
     SysTickIntRegister(SysTickIntHandler);
+
+    // Set the PWM clock rate (using the prescaler)
+    SysCtlPWMClockSet(PWM_DIVIDER_CODE);
     //
     // Enable interrupt and device
     SysTickIntEnable();
@@ -136,20 +139,21 @@ handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
-    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d \n", mappedVal); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ADC = %4d\r\n", mappedVal); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
     int16_t mappedYaw = mapYaw2Deg(yaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d \n", mappedYaw); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d\r\n", mappedYaw); // * usprintf
     UARTSend (statusStr);
 
-    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\n", mainRotor.duty, tailRotor.duty); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", mainRotor.duty, tailRotor.duty); // * usprintf
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
     displayMeanVal (meanVal, inADC_max);
     displayYaw (mappedYaw);
+    displayPWM(&mainRotor, &tailRotor);
 }
 
 
@@ -159,18 +163,22 @@ controlDuty(void)
     if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
     {
         mainRotor.duty += PWM_DUTY_STEP_PER;
+        setPWM(&mainRotor);
     }
     if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
     {
         mainRotor.duty -= PWM_DUTY_STEP_PER;
+        setPWM(&mainRotor);
     }
     if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
     {
         tailRotor.duty += PWM_DUTY_STEP_PER;
+        setPWM(&tailRotor);
     }
     if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
     {
         tailRotor.duty -= PWM_DUTY_STEP_PER;
+        setPWM(&tailRotor);
     }
 }
 
@@ -206,12 +214,6 @@ updateDesired(void)
             desiredYaw += DEG_CIRC;
         }
     }
-}
-
-void
-initSwitch(void)
-{
-
 }
 
 

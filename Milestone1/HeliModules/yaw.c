@@ -83,10 +83,10 @@ yawIntHandler(void)
 void
 yawRefIntHandler(void)
 {
-    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
-    GPIOIntClear(YAW_PORT_BASE, intStatus);
+    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE_REF, true);
+    GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
 
-    yaw = 0;
+    //yaw = 0;
     hitYawRef = true;
 }
 
