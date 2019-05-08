@@ -260,7 +260,13 @@ main(void)
         }
 
         // Change rotor duty cycles using buttons
-        controlDuty ();
+        //controlDuty ();
+
+        updateDesired();
+        int16_t altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
+        int16_t yawError = calcYawError(desiredYaw, map2Deg(yaw));
+
+        updateMotors(&mainRotor, &tailRotor, altError, yawError);
 
         /*
         switch (heliState)

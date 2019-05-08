@@ -27,7 +27,7 @@
 #define I_GAIN_MAIN  1   // Integral Gain for main rotor
 #define P_GAIN_TAIL  1   // Proportional Gain for tail rotor
 #define I_GAIN_TAIL  1   // Integral Gain for tail rotor
-#define HOVER_DUTY_MAIN 30
+#define HOVER_DUTY_MAIN 40
 #define HOVER_DUTY_TAIL 30
 
 //*****************************************************************************
