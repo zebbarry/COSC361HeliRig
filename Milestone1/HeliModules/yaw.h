@@ -46,7 +46,7 @@ volatile int16_t yaw;
 volatile static bool hitYawRef;
 volatile static uint32_t currentState;
 volatile static uint32_t previousState;
-volatile static int8_t dir;
+volatile static enum direction dir;
 
 
 //*****************************************************************************

@@ -33,8 +33,8 @@
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-static int16_t yawInt;
-static int16_t altInt;
+static int16_t yawErrorInt;
+static int16_t altErrorInt;
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
@@ -49,9 +49,15 @@ void
 integrate(int16_t altError, int16_t yawError);
 
 //*****************************************************************************
-// Function to calculate error.
+// Function to calculate altitude error.
 //*****************************************************************************
 int16_t
-calcError(int16_t desired, int16_t actual);
+calcAltError(int16_t desiredAlt, int16_t actualAlt);
+
+//*****************************************************************************
+// Function to calculate yaw error.
+//*****************************************************************************
+int16_t
+calcYawError(int16_t desiredYaw, int16_t actualYaw);
 
 #endif /* MOTORCONTROL_H_ */

@@ -61,7 +61,8 @@ char statusStr[MAX_STR_LEN + 1];
 static uint16_t inADC_max;
 rotor_t mainRotor;
 rotor_t tailRotor;
-
+enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
+static enum state heliState;
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
@@ -150,6 +151,68 @@ handleHMI (uint16_t meanVal)
 }
 
 
+void
+controlDuty(void)
+{
+    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
+    {
+        mainRotor.duty += PWM_DUTY_STEP_PER;
+    }
+    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
+    {
+        mainRotor.duty -= PWM_DUTY_STEP_PER;
+    }
+    if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
+    {
+        tailRotor.duty += PWM_DUTY_STEP_PER;
+    }
+    if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
+    {
+        tailRotor.duty -= PWM_DUTY_STEP_PER;
+    }
+}
+
+
+void
+updateDesired(void)
+{
+    if (checkButton(UP) == PUSHED && desiredAlt < ALT_MAX_PER)
+    {
+        desiredAlt += ALT_STEP_PER;
+        altErrorInt = 0;
+    }
+    if (checkButton(DOWN) == PUSHED && desiredAlt > ALT_MIN_PER)
+    {
+        desiredAlt -= ALT_STEP_PER;
+        altErrorInt = 0;
+    }
+    if (checkButton(RIGHT) == PUSHED)
+    {
+        desiredYaw += YAW_STEP_DEG;
+        yawErorrInt = 0;
+        if (desiredYaw > DEG_CIRC / 2)
+        {
+            desiredYaw -= DEG_CIRC;
+        }
+    }
+    if (checkButton(LEFT) == PUSHED)
+    {
+        desiredYaw -= YAW_STEP_DEG;
+        yawErorrInt = 0;
+        if (desiredYaw < -DEG_CIRC / 2)
+        {
+            desiredYaw += DEG_CIRC;
+        }
+    }
+}
+
+void
+initSwitch(void)
+{
+
+}
+
+
 int
 main(void)
 {
@@ -157,6 +220,9 @@ main(void)
     bool init_prog = true;
     uint16_t desiredAlt = 0;
     uint16_t desiredYaw = 0;
+    int16_t yawError;
+    int16_t altError;
+    heliState = LANDED;
 
     initButtons ();
     initClock ();
@@ -165,9 +231,9 @@ main(void)
     initDisplay ();
     initUSB_UART ();
     initCircBuf (&g_inBuffer, BUF_SIZE);
-    initialisePWMMain (&mainRotor);
-    initialisePWMTail (&tailRotor);
-    motorPower(&mainRotor, true);
+    initPWMMain (&mainRotor); // Initialise motors with set freq and duty cycle of 5%
+    initPWMTail (&tailRotor);
+    motorPower(&mainRotor, true);   // Turn on motors
     motorPower(&tailRotor, true);
 
     //
@@ -191,43 +257,47 @@ main(void)
             }
         }
 
-        // Change rotor duty cycles
-        if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
-        {
-            mainRotor.duty += PWM_DUTY_STEP_PER;
-        }
-        if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
-        {
-            mainRotor.duty -= PWM_DUTY_STEP_PER;
-        }
-        if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
-        {
-            tailRotor.duty += PWM_DUTY_STEP_PER;
-        }
-        if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
-        {
-            tailRotor.duty -= PWM_DUTY_STEP_PER;
-        }
+        // Change rotor duty cycles using buttons
+        controlDuty ();
 
-        // Change altitude and angle
-        if (checkButton(UP) == PUSHED && desiredAlt < ALT_MAX_PER)
+        /*
+        switch (heliState)
         {
-            desiredAlt += ALT_STEP_PER;
-        }
-        if (checkButton(DOWN) == PUSHED && desiredAlt > ALT_MIN_PER)
-        {
-            desiredAlt -= ALT_STEP_PER;
-        }
-        if (checkButton(RIGHT) == PUSHED)
-        {
-            desiredYaw += YAW_STEP_DEG;
-            desiredYaw = mapYaw2Deg(desiredYaw * YAW_TABS);
-        }
-        if (checkButton(LEFT) == PUSHED)
-        {
-            desiredYaw -= YAW_STEP_DEG;
-            desiredYaw = mapYaw2Deg(desiredYaw * YAW_TABS);
-        }
+        case LANDED:
+            if (mainRotor.state = true || tailRotor.state == true)
+            {
+                mainRotor.duty = 2;
+                tailRotor.duty = 2;
+                setPWM(&mainRotor);
+                setPWM(&tailRotor);
+
+                motorPower(&mainRotor, false);
+                motorPower(&tailRotor, false);
+            }
+
+            if (SW == 1)
+            {
+                heliState = TAKING_OFF;
+            }
+            break;
+        case TAKING_OFF:
+            break;
+        case FLYING:
+            // Change altitude and angle
+            updateDesired ();
+            altError = calcAltError (desiredAlt, mapAlt(meanVal));
+            yawError = calcYawError (desiredYaw, map2deg(yaw));
+            integrate (altError, yawError);
+            updateMotors(&mainRotor, &tailRotor, altError, yawError);
+
+            if (SW == 0)
+            {
+                heliState = LANDING;
+            }
+            break;
+        case LANDING:
+            break;
+        }*/
 
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)

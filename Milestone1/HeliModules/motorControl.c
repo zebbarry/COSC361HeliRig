@@ -23,8 +23,11 @@
 void
 updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t yawError)
 {
-    int16_t newMainDuty = altError * P_GAIN_MAIN + altInt * I_GAIN_MAIN + HOVER_DUTY_MAIN;
-    int16_t newTailDuty = yawError * P_GAIN_TAIL + yawInt * I_GAIN_TAIL + HOVER_DUTY_TAIL;
+    int16_t newMainDuty = altError * P_GAIN_MAIN + \
+            altErrorInt * I_GAIN_MAIN + HOVER_DUTY_MAIN;
+
+    int16_t newTailDuty = yawError * P_GAIN_TAIL + \
+            yawErrorInt * I_GAIN_TAIL + HOVER_DUTY_TAIL;
 
     // Check duty cycles are within range
     if (newMainDuty > PWM_DUTY_MAX_PER)
@@ -65,15 +68,38 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t y
 void
 integrate(int16_t altError, int16_t yawError)
 {
-    altInt += altError;
-    yawInt += yawError;
+    altErrorInt += altError;
+    yawErrorInt += yawError;
 }
 
 //*****************************************************************************
-// Function to calculate error.
+// Function to calculate altitude error.
 //*****************************************************************************
 int16_t
-calcError(int16_t desired, int16_t actual)
+calcAltError(int16_t desiredAlt, int16_t actualAlt)
 {
-    return desired - actual;
+    return desiredAlt - actualAlt;
+}
+
+//*****************************************************************************
+// Function to calculate yaw error.
+//*****************************************************************************
+int16_t
+calcYawError(int16_t desiredYaw, int16_t actualYaw)
+{
+    int16_t error = desiredYaw - actualYaw;
+
+    // Wrap error in other direction if necessary.
+    if (abs(error) > 180)
+    {
+        if (error < 0)
+        {
+            error += 360;
+        } else
+        {
+            error -= 360;
+        }
+    }
+
+    return error;
 }

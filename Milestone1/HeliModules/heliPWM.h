@@ -69,18 +69,18 @@ typedef struct {
 } rotor_t;
 
 /*********************************************************
- * initialisePWMMain
+ * initPWMMain
  * M0PWM7 (J4-05, PC5) is used for the main rotor motor
  *********************************************************/
 void
-initialisePWMMain (rotor_t *rotor);
+initPWMMain (rotor_t *rotor);
 
 /*********************************************************
- * initialisePWMTail
+ * initPWMTail
  * M1PWM5 (J3-10, PF1) is used for the tail rotor motor
  *********************************************************/
 void
-initialisePWMTail (rotor_t *rotor);
+initPWMTail (rotor_t *rotor);
 
 /********************************************************
  * Function to set the freq, duty cycle of M0PWM7
