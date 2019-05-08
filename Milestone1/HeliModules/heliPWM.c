@@ -1,6 +1,6 @@
 // *******************************************************
 //
-// heliPWM.h
+// heliPWM.c
 //
 // Support for use of the PWM modules for a tail and
 // main rotor.
