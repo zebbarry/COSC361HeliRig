@@ -263,8 +263,8 @@ main(void)
         //controlDuty ();
 
         updateDesired();
-        int16_t altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
-        int16_t yawError = calcYawError(desiredYaw, map2Deg(yaw));
+        altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
+        yawError = calcYawError(desiredYaw, mapYaw2Deg(yaw));
 
         updateMotors(&mainRotor, &tailRotor, altError, yawError);
 
