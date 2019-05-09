@@ -56,6 +56,8 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t y
         tailRotor->duty = newTailDuty;
     }*/
 
+    mainRotor->duty = newMainDuty;
+    tailRotor->duty = newTailDuty;
     setPWM(mainRotor);
     setPWM(tailRotor);
 }
