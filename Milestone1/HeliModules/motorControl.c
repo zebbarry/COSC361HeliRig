@@ -21,11 +21,13 @@
 // Function to update motor duty cycles to reduce error values to zero.
 //*****************************************************************************
 void
-updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t yawError)
+updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    int16_t newMainDuty = altError * P_GAIN_MAIN + HOVER_DUTY_MAIN;
+    int32_t newMainDuty = (2*altError + P_GAIN_MAIN) / 2 / P_GAIN_MAIN + HOVER_DUTY_MAIN;
+    //newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;
 
-    int16_t newTailDuty = yawError * P_GAIN_TAIL + HOVER_DUTY_TAIL;
+    int32_t newTailDuty = (2*yawError + P_GAIN_TAIL) / 2 / P_GAIN_TAIL + HOVER_DUTY_TAIL;
+    //newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;
 
     // Check duty cycles are within range
     if (newMainDuty > PWM_DUTY_MAX_PER)
@@ -66,7 +68,7 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int16_t altError, int16_t y
 // Function to integrate yaw and altitude error.
 //*****************************************************************************
 void
-integrate(int16_t altError, int16_t yawError)
+integrate(int32_t altError, int32_t yawError)
 {
     altErrorInt += altError;
     yawErrorInt += yawError;
@@ -75,8 +77,8 @@ integrate(int16_t altError, int16_t yawError)
 //*****************************************************************************
 // Function to calculate altitude error.
 //*****************************************************************************
-int16_t
-calcAltError(int16_t desiredAlt, int16_t actualAlt)
+int32_t
+calcAltError(int32_t desiredAlt, int32_t actualAlt)
 {
     return desiredAlt - actualAlt;
 }
@@ -84,13 +86,13 @@ calcAltError(int16_t desiredAlt, int16_t actualAlt)
 //*****************************************************************************
 // Function to calculate yaw error.
 //*****************************************************************************
-int16_t
-calcYawError(int16_t desiredYaw, int16_t actualYaw)
+int32_t
+calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
     int16_t error = desiredYaw - actualYaw;
 
     // Wrap error in other direction if necessary.
-    if (abs(error) > 180)
+    /*if (abs(error) > 180)
     {
         if (error < 0)
         {
@@ -99,7 +101,7 @@ calcYawError(int16_t desiredYaw, int16_t actualYaw)
         {
             error -= 360;
         }
-    }
+    }*/
 
     return error;
 }

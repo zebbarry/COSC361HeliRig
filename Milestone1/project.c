@@ -63,8 +63,8 @@ rotor_t mainRotor;
 rotor_t tailRotor;
 enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
 static enum state heliState;
-static int16_t desiredAlt = 0;
-static int16_t desiredYaw = 0;
+static int32_t desiredAlt = 0;
+static int32_t desiredYaw = 0;
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
@@ -139,15 +139,18 @@ handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
-    usnprintf (statusStr, sizeof(statusStr), "ALT = %3d [%3d]\r\n", mappedVal, desiredAlt); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ALT = %3d [%3d]\n", mappedVal, desiredAlt); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
     int16_t mappedYaw = mapYaw2Deg(yaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW = %4d [%4d]\r\n", mappedYaw, desiredYaw); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %3d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw)); // * usprintf
     UARTSend (statusStr);
 
-    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", mainRotor.duty, tailRotor.duty); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\n", mainRotor.duty, tailRotor.duty); // * usprintf
+    UARTSend (statusStr);
+
+    usnprintf (statusStr, sizeof(statusStr), "HELI STATE:   %1d\n\n", heliState); // * usprintf
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
@@ -198,21 +201,13 @@ updateDesired(void)
     }
     if (checkButton(RIGHT) == PUSHED)
     {
-        desiredYaw += YAW_STEP_DEG;
+        desiredYaw += (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
         yawErrorInt = 0;
-        if (desiredYaw > DEG_CIRC / 2)
-        {
-            desiredYaw -= DEG_CIRC;
-        }
     }
     if (checkButton(LEFT) == PUSHED)
     {
-        desiredYaw -= YAW_STEP_DEG;
+        desiredYaw -= (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
         yawErrorInt = 0;
-        if (desiredYaw < -DEG_CIRC / 2)
-        {
-            desiredYaw += DEG_CIRC;
-        }
     }
 }
 
@@ -222,9 +217,11 @@ main(void)
 {
     uint16_t meanVal = 0;
     bool init_prog = true;
-    int16_t yawError;
-    int16_t altError;
-    heliState = LANDED;
+    int32_t yawError;
+    int32_t altError;
+    yawErrorInt = 0;
+    altErrorInt = 0;
+    heliState = FLYING;
 
     initButtons ();
     initClock ();
@@ -264,8 +261,9 @@ main(void)
 
         updateDesired();
         altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
-        yawError = calcYawError(desiredYaw, mapYaw2Deg(yaw));
+        yawError = calcYawError(desiredYaw, yaw);
 
+        integrate (altError, yawError);
         updateMotors(&mainRotor, &tailRotor, altError, yawError);
 
         /*
@@ -295,7 +293,6 @@ main(void)
             updateDesired ();
             altError = calcAltError (desiredAlt, mapAlt(meanVal));
             yawError = calcYawError (desiredYaw, map2deg(yaw));
-            integrate (altError, yawError);
             updateMotors(&mainRotor, &tailRotor, altError, yawError);
 
             if (SW == 0)
