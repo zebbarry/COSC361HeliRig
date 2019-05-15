@@ -125,7 +125,7 @@ initClock (void)
 // initAltitude - Calibrate height
 //********************************************************
 void
-initAltitude (meanVal)
+initAltitude (uint16_t meanVal)
 {
     inADC_max = meanVal - ALT_RANGE;
 }
