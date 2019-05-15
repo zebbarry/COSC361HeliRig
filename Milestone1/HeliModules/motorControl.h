@@ -23,9 +23,9 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define P_GAIN_MAIN  3   // Proportional Gain for main rotor
+#define P_GAIN_MAIN  2   // Proportional Gain for main rotor
 #define I_GAIN_MAIN  200   // Integral Gain for main rotor
-#define P_GAIN_TAIL  5   // Proportional Gain for tail rotor
+#define P_GAIN_TAIL  4   // Proportional Gain for tail rotor
 #define I_GAIN_TAIL  100   // Integral Gain for tail rotor
 #define HOVER_DUTY_MAIN 40
 #define HOVER_DUTY_TAIL 35
