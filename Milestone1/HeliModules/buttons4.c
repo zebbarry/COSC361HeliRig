@@ -74,6 +74,13 @@ initButtons (void)
        GPIO_PIN_TYPE_STD_WPU);
     but_normal[RIGHT] = RIGHT_BUT_NORMAL;
 
+    // SW button
+    SysCtlPeripheralEnable (SW_PERIPH);
+    GPIOPinTypeGPIOInput (SW_PORT_BASE, SW_PIN);
+    GPIOPadConfigSet (SW_PORT_BASE, SW_PIN, GPIO_STRENGTH_2MA,
+    GPIO_PIN_TYPE_STD_WPD);
+    but_normal[SW] = SW_BUT_NORMAL;
+
 	for (i = 0; i < NUM_BUTS; i++)
 	{
 		but_state[i] = but_normal[i];
@@ -102,6 +109,7 @@ updateButtons (void)
 	but_value[DOWN] = (GPIOPinRead (DOWN_BUT_PORT_BASE, DOWN_BUT_PIN) == DOWN_BUT_PIN);
     but_value[LEFT] = (GPIOPinRead (LEFT_BUT_PORT_BASE, LEFT_BUT_PIN) == LEFT_BUT_PIN);
     but_value[RIGHT] = (GPIOPinRead (RIGHT_BUT_PORT_BASE, RIGHT_BUT_PIN) == RIGHT_BUT_PIN);
+    but_value[SW] = (GPIOPinRead (SW_PORT_BASE, SW_PIN) == SW_PIN);
 	// Iterate through the buttons, updating button variables as required
 	for (i = 0; i < NUM_BUTS; i++)
 	{
