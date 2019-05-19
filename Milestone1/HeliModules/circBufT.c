@@ -60,6 +60,7 @@ readCircBuf (circBuf_t *buffer)
     return entry;
 }
 
+
 // *******************************************************
 // freeCircBuf: Releases the memory allocated to the buffer data,
 // sets pointer to NULL and ohter fields to 0. The buffer can
@@ -74,3 +75,17 @@ freeCircBuf (circBuf_t * buffer)
 	buffer->data = NULL;
 }
 
+
+//********************************************************
+// calcMean - Calculate mean value from buffer.
+//********************************************************
+uint16_t
+calcMean(circBuf_t *buffer, uint32_t size)
+{
+    uint16_t i;
+    int32_t sum = 0;
+    for (i = 0; i < size; i++)
+        sum = sum + readCircBuf (buffer);
+    // Calculate and display the rounded mean of the buffer contents
+    return (2 * sum + size) / 2 / size;
+}

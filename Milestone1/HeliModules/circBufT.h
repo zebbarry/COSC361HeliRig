@@ -51,4 +51,10 @@ readCircBuf (circBuf_t *buffer);
 void
 freeCircBuf (circBuf_t *buffer);
 
+//********************************************************
+// calcMean - Calculate mean value from buffer.
+//********************************************************
+uint16_t
+calcMean(circBuf_t *buffer, uint32_t size);
+
 #endif /*CIRCBUFT_H_*/
