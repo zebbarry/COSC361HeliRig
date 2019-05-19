@@ -11,19 +11,18 @@
 // Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
-// Last modified:   5.5.2019
+// Last modified:   29.4.2019
 //
 // *******************************************************
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "heliPWM.h"
 
 //*****************************************************************************
 // Constants
 //*****************************************************************************
 #define ALT_RANGE 800                 // Range of voltage for altitude reading
-#define MAX_DISP_LEN 16
+enum state {SCALED = 0, MEAN, CLEAR}; // State variable for altitude unit
 
 //*****************************************************************************
 // Initialise OrbitOLED display.
@@ -38,27 +37,15 @@ int16_t
 map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t max_out);
 
 //*****************************************************************************
-// Function to map input ADC value to altitude range in percent.
-//*****************************************************************************
-int16_t
-mapAlt(uint16_t meanVal, uint16_t inADC_max);
-
-//*****************************************************************************
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t inADC_max);
+displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState);
 
 //*****************************************************************************
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
 displayYaw(int16_t mappedYaw);
-
-//*****************************************************************************
-// Function to display the PWM for main and tail rotors.
-//*****************************************************************************
-void
-displayPWM(rotor_t *main, rotor_t *tail);
 
 #endif /*DISPLAY_H_*/

@@ -1,5 +1,5 @@
-#ifndef HELIADC_H_
-#define HELIADC_H_
+#ifndef ADC_H_
+#define ADC_H_
 
 // *******************************************************
 //
@@ -24,7 +24,7 @@
 // Globals to module
 // ****************************************************************************
 extern circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-#define HELI_CHANNEL ADC_CTL_CH9    // Analogue channel input.
+#define HELI_CHANNEL        ADC_CTL_CH9
 
 //*****************************************************************************
 // The handler for the ADC conversion complete interrupt.
@@ -40,4 +40,4 @@ ADCIntHandler(void);
 void
 initADC (void);
 
-#endif /*HELIADC_H_*/
+#endif /*ADC_H_*/

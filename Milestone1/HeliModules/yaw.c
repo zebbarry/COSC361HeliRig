@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stdlib.h"
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -43,33 +42,33 @@ yawIntHandler(void)
     case BOTH_ZERO:
         if (previousState == B_ONE)     // A leads
         {
-            dir = CCW;
-        } else {                        // B leads, etc.
             dir = CW;
+        } else {                        // B leads, etc.
+            dir = CCW;
         }
         break;
     case A_ONE:
         if (previousState == BOTH_ZERO)
         {
-            dir = CCW;
-        } else {
             dir = CW;
+        } else {
+            dir = CCW;
         }
         break;
     case BOTH_ONE:
         if (previousState == A_ONE)
         {
-            dir = CCW;
-        } else {
             dir = CW;
+        } else {
+            dir = CCW;
         }
         break;
     case B_ONE:
         if (previousState == BOTH_ONE)
         {
-            dir = CCW;
-        } else {
             dir = CW;
+        } else {
+            dir = CCW;
         }
         break;
     }
@@ -78,18 +77,6 @@ yawIntHandler(void)
     previousState = currentState;
 }
 
-//*****************************************************************************
-// The handler for the reference pin change for PC4.
-//*****************************************************************************
-void
-yawRefIntHandler(void)
-{
-    uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE_REF, true);
-    GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
-
-    //yaw = 0;
-    hitYawRef = true;
-}
 
 //********************************************************
 // initYaw - Initialise yaw pins
@@ -99,26 +86,18 @@ initYaw (void)
 {
     // Enable GPIO Port for yaw.
     SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH);
-    SysCtlPeripheralEnable(YAW_SYSCTL_PERIPH_REF);
 
-    // Congifure Pin A, Pin B and Ref Pin for input WPD
+    // Congifure Pin A and Pin B for input WPD
     GPIOPadConfigSet(YAW_PIN_A, YAW_PIN_A, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
     GPIOPadConfigSet(YAW_PIN_B, YAW_PIN_B, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
-    GPIOPadConfigSet(YAW_PIN_REF, YAW_PIN_REF, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD_WPD);
 
     // Set data direction register as input
     GPIOPinTypeGPIOInput(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
-    GPIOPinTypeGPIOInput(YAW_PORT_BASE_REF, YAW_PIN_REF);
 
     // Set and register interrupts for pin A and B.
-    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES);
+    GPIOIntTypeSet(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B, GPIO_BOTH_EDGES); // | GPIO_RISING_EDGE
     GPIOIntRegister(YAW_PORT_BASE, yawIntHandler);
     GPIOIntEnable(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
-
-    // Set and register interrupts for Ref Pin
-    GPIOIntTypeSet(YAW_PORT_BASE_REF, YAW_PIN_REF, GPIO_RISING_EDGE);
-    GPIOIntRegister(YAW_PORT_BASE_REF, yawRefIntHandler);
-    GPIOIntEnable(YAW_PORT_BASE_REF, YAW_PIN_REF);
 
     // Set initial state.
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
@@ -130,11 +109,11 @@ initYaw (void)
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(int16_t yawVal)
+mapYaw2Deg(void)
 {
-    int16_t yawDeg = (2*(yawVal * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
+    int16_t mappedYaw;
+    int16_t yawDeg = (2*(yaw * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS;
     int16_t scaledYaw = yawDeg % DEG_CIRC;
-    int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {
         if (scaledYaw > 0) {
             mappedYaw = scaledYaw - 360;

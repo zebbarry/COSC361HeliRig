@@ -8,7 +8,7 @@
 // Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
-// Last modified:   5.5.2019
+// Last modified:   29.4.2019
 //
 // *******************************************************
 
@@ -19,7 +19,6 @@
 #include "utils/ustdlib.h"
 #include "display.h"
 #include "yaw.h"
-#include "heliPWM.h"
 
 //*****************************************************************************
 // Global variables
@@ -47,30 +46,34 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 }
 
 //*****************************************************************************
-// Function to map input ADC value to altitude range in percent.
-//*****************************************************************************
-int16_t
-mapAlt(uint16_t meanVal, uint16_t inADC_max)
-{
-    int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
-    int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
-
-    return mappedVal;
-}
-
-//*****************************************************************************
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
+displayMeanVal(uint16_t meanVal, uint16_t inADC_max, uint8_t displayState)
 {
-    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
+    char string[17];  // 16 characters across the display
 
-    int16_t mappedVal = mapAlt(meanVal, inADC_max);
+    // If displaying percent, map to range 0-100.
+    if (displayState == SCALED)
+    {
+        int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
+        int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
 
-    // Form a new string for the line.  The maximum width specified for the
-    //  number field ensures it is displayed right justified.
-    usnprintf (string, sizeof(string), "Perc ADC = %5d", mappedVal);
+        // Form a new string for the line.  The maximum width specified for the
+        //  number field ensures it is displayed right justified.
+        usnprintf (string, sizeof(string), "Perc ADC = %5d", mappedVal);
+    } else if (displayState == MEAN)
+    {
+
+        // Form a new string for the line.  The maximum width specified for the
+        //  number field ensures it is displayed right justified.
+        usnprintf (string, sizeof(string), "Mean ADC = %5d", meanVal);
+    } else if (displayState == CLEAR)
+    {
+        // Form a new string for the line.  The maximum width specified for the
+        //  number field ensures it is displayed right justified.
+        usnprintf (string, sizeof(string), "                ");
+    }
 
     // Update line on display.
     OLEDStringDraw (string, 0, 1);
@@ -82,26 +85,11 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 void
 displayYaw(int16_t mappedYaw)
 {
-    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
+    char string[17];  // 16 characters across the display
 
     usnprintf (string, sizeof(string), "Yaw Deg  = %5d", mappedYaw);
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
-
-}
-
-//*****************************************************************************
-// Function to display the PWM for main and tail rotors.
-//*****************************************************************************
-void
-displayPWM(rotor_t *main, rotor_t *tail)
-{
-    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
-
-    usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d\r\n", main->duty, tail->duty);
-
-    // Update line on display, first line.
-    OLEDStringDraw (string, 0, 3);
 
 }
