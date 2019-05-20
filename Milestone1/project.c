@@ -316,6 +316,7 @@ main(void)
             if (checkButton(SW) == RELEASED)
             {
                 desiredAlt = 0;
+                desiredYaw = 0;
                 heliState = LANDING;
             }
             break;
