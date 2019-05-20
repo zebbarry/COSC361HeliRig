@@ -297,6 +297,8 @@ main(void)
                 setPWM(&tailRotor);
                 desiredAlt = 0;
                 desiredYaw = 0;
+                hitYawRef = false;
+                yaw = 0;
 
                 heliState = FLYING;
             }
