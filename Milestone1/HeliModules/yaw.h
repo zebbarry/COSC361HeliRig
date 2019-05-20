@@ -43,7 +43,7 @@ enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
 // Globals to module
 // ****************************************************************************
 volatile int16_t yaw;
-volatile static bool hitYawRef;
+volatile bool hitYawRef;
 volatile static uint32_t currentState;
 volatile static uint32_t previousState;
 volatile static enum direction dir;

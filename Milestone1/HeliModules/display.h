@@ -47,18 +47,24 @@ mapAlt(uint16_t meanVal, uint16_t inADC_max);
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t inADC_max);
+displayMeanVal(uint16_t meanVal, uint16_t desiredAlt, uint16_t inADC_max);
 
 //*****************************************************************************
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t mappedYaw);
+displayYaw(int16_t mappedYaw, int16_t desiredYaw);
 
 //*****************************************************************************
 // Function to display the PWM for main and tail rotors.
 //*****************************************************************************
 void
 displayPWM(rotor_t *main, rotor_t *tail);
+
+//*****************************************************************************
+// Function to display the helicopter state
+//*****************************************************************************
+void
+displayState(uint16_t heliState);
 
 #endif /*DISPLAY_H_*/

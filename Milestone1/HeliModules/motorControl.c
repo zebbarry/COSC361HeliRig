@@ -24,10 +24,10 @@ void
 updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
     int32_t newMainDuty = (2*altError + P_GAIN_MAIN) / 2 / P_GAIN_MAIN + HOVER_DUTY_MAIN;
-    //newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;
+    newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;
 
     int32_t newTailDuty = (2*yawError + P_GAIN_TAIL) / 2 / P_GAIN_TAIL + HOVER_DUTY_TAIL;
-    //newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;
+    newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;
 
     // Check duty cycles are within range
     if (newMainDuty > PWM_DUTY_MAX_PER)

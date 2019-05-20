@@ -139,24 +139,39 @@ handleHMI (uint16_t meanVal)
 {
     // Form and send a status message for altitude to the console
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
-    usnprintf (statusStr, sizeof(statusStr), "ALT = %3d [%3d]\n", mappedVal, desiredAlt); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "ALT = %3d [%3d]\r\n", mappedVal, desiredAlt); // * usprintf
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
     int16_t mappedYaw = mapYaw2Deg(yaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW = %3d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw)); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "YAW = %3d [%3d]\r\n", mappedYaw, mapYaw2Deg(desiredYaw)); // * usprintf
     UARTSend (statusStr);
 
-    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\n", mainRotor.duty, tailRotor.duty); // * usprintf
+    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", mainRotor.duty, tailRotor.duty); // * usprintf
     UARTSend (statusStr);
 
-    usnprintf (statusStr, sizeof(statusStr), "HELI STATE:   %1d\n\n", heliState); // * usprintf
+    char* state;
+    if (heliState == 0)
+    {
+        state = "LD";
+    } else if (heliState == 1)
+    {
+        state = "TF";
+    } else if (heliState == 2)
+    {
+        state = "FL";
+    } else
+    {
+        state = "LG";
+    }
+    usnprintf (statusStr, sizeof(statusStr), "HELI STATE:   %s\r\n\n", state); // * usprintf
     UARTSend (statusStr);
 
     // Update OLED display with ADC and yaw value.
-    displayMeanVal (meanVal, inADC_max);
-    displayYaw (mappedYaw);
+    displayMeanVal (meanVal, desiredAlt, inADC_max);
+    displayYaw (mappedYaw, desiredYaw);
     displayPWM(&mainRotor, &tailRotor);
+    displayState(heliState);
 }
 
 
@@ -221,7 +236,7 @@ main(void)
     int32_t altError;
     yawErrorInt = 0;
     altErrorInt = 0;
-    heliState = FLYING;
+    heliState = LANDED;
 
     initButtons ();
     initClock ();
@@ -295,10 +310,10 @@ main(void)
             {
                 tailRotor.duty = HOVER_DUTY_TAIL;
                 setPWM(&tailRotor);
+                yaw = 0;
                 desiredAlt = 0;
                 desiredYaw = 0;
                 hitYawRef = false;
-                yaw = 0;
 
                 heliState = FLYING;
             }

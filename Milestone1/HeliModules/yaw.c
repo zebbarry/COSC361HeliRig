@@ -34,7 +34,6 @@ void
 yawIntHandler(void)
 {
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
-    GPIOIntClear(YAW_PORT_BASE, intStatus);
 
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
@@ -76,6 +75,8 @@ yawIntHandler(void)
 
     yaw += dir;
     previousState = currentState;
+
+    GPIOIntClear(YAW_PORT_BASE, intStatus);
 }
 
 //*****************************************************************************
@@ -85,9 +86,10 @@ void
 yawRefIntHandler(void)
 {
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE_REF, true);
-    GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
 
     hitYawRef = true;
+
+    GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
 }
 
 //********************************************************
@@ -122,6 +124,7 @@ initYaw (void)
     // Set initial state.
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
     yaw = 0;
+    hitYawRef = false;
     dir = STATIC;
 }
 

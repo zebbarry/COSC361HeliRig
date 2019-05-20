@@ -62,15 +62,13 @@ mapAlt(uint16_t meanVal, uint16_t inADC_max)
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
+displayMeanVal(uint16_t meanVal, uint16_t desiredAlt, uint16_t inADC_max)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
     int16_t mappedVal = mapAlt(meanVal, inADC_max);
 
-    // Form a new string for the line.  The maximum width specified for the
-    //  number field ensures it is displayed right justified.
-    usnprintf (string, sizeof(string), "Perc ADC = %5d", mappedVal);
+    usnprintf (string, sizeof(string), "ALT: %3d [%3d]\n", mappedVal, desiredAlt);
 
     // Update line on display.
     OLEDStringDraw (string, 0, 1);
@@ -80,11 +78,11 @@ displayMeanVal(uint16_t meanVal, uint16_t inADC_max)
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t mappedYaw)
+displayYaw(int16_t mappedYaw, int16_t desiredYaw)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "Yaw Deg  = %5d", mappedYaw);
+    usnprintf (string, sizeof(string), "YAW: %3d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw));
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
@@ -99,9 +97,38 @@ displayPWM(rotor_t *main, rotor_t *tail)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d\r\n", main->duty, tail->duty);
+    usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", main->duty, tail->duty);
+
+    // Update line on display, first line.
+    OLEDStringDraw (string, 0, 2);
+
+}
+
+//*****************************************************************************
+// Function to display the helicopter state
+//*****************************************************************************
+void
+displayState(uint16_t heliState)
+{
+    char string[MAX_DISP_LEN + 1];  // 16 characters across the display
+    char* state;
+
+    if (heliState == 0)
+    {
+        state = "LD";
+    } else if (heliState == 1)
+    {
+        state = "TF";
+    } else if (heliState == 2)
+    {
+        state = "FL";
+    } else
+    {
+        state = "LG";
+    }
+
+    usnprintf (string, sizeof(string), "Heli State: %s", state);
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 3);
-
 }
