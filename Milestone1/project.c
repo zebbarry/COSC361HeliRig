@@ -259,21 +259,16 @@ main(void)
         // Change rotor duty cycles using buttons
         //controlDuty ();
 
-        updateDesired();
-        altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
-        yawError = calcYawError(desiredYaw, yaw);
 
-        integrate (altError, yawError);
-        updateMotors(&mainRotor, &tailRotor, altError, yawError);
-
-        /*
+        // FSM based on SW1
+        // ----- FIX -----
         switch (heliState)
         {
         case LANDED:
-            if (mainRotor.state = true || tailRotor.state == true)
+            if (mainRotor.state || tailRotor.state)
             {
-                mainRotor.duty = 2;
-                tailRotor.duty = 2;
+                mainRotor.duty = HOVER_DUTY_MAIN;
+                tailRotor.duty = HOVER_DUTY_TAIL;
                 setPWM(&mainRotor);
                 setPWM(&tailRotor);
 
@@ -281,28 +276,62 @@ main(void)
                 motorPower(&tailRotor, false);
             }
 
-            if (SW == 1)
+            if (checkButton(SW) == PUSHED)
             {
                 heliState = TAKING_OFF;
             }
             break;
+
         case TAKING_OFF:
+            if (!mainRotor.state || !tailRotor.state)
+            {
+                motorPower(&mainRotor, true);
+                motorPower(&tailRotor, true);
+                tailRotor.duty = HOVER_DUTY_TAIL + 5;
+                setPWM(&tailRotor);
+            }
+
+            if (hitYawRef)
+            {
+                tailRotor.duty = HOVER_DUTY_TAIL;
+                setPWM(&tailRotor);
+                desiredAlt = 0;
+                desiredYaw = 0;
+
+                heliState = FLYING;
+            }
             break;
+
         case FLYING:
             // Change altitude and angle
-            updateDesired ();
-            altError = calcAltError (desiredAlt, mapAlt(meanVal));
-            yawError = calcYawError (desiredYaw, map2deg(yaw));
+            updateDesired();
+            altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
+            yawError = calcYawError(desiredYaw, yaw);
+
+            integrate (altError, yawError);
             updateMotors(&mainRotor, &tailRotor, altError, yawError);
 
-            if (SW == 0)
+            if (checkButton(SW) == RELEASED)
             {
+                desiredAlt = 0;
                 heliState = LANDING;
             }
             break;
+
         case LANDING:
+            altError = calcAltError(desiredAlt, mapAlt(meanVal, inADC_max));
+            yawError = calcYawError(desiredYaw, yaw);
+
+            integrate (altError, yawError);
+            updateMotors(&mainRotor, &tailRotor, altError, yawError);
+
+            if (mapAlt(meanVal, inADC_max) < 2)
+            {
+                heliState = LANDED;
+            }
             break;
-        }*/
+        }
+
 
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)
