@@ -96,7 +96,12 @@ displayPWM(rotor_t *main, rotor_t *tail)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", main->duty, tail->duty);
+    if (main->state && tail->state)
+    {
+        usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", main->duty, tail->duty);
+    } else {
+        usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", 0, 0);
+    }
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 2);

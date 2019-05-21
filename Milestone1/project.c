@@ -16,16 +16,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
 #include "inc/hw_ints.h"
-#include "driverlib/pwm.h"
-#include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/systick.h"
 #include "driverlib/interrupt.h"
-#include "driverlib/debug.h"
-#include "driverlib/pin_map.h"
 #include "utils/ustdlib.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -38,6 +32,7 @@
 #include "heliPWM.h"
 #include "motorControl.h"
 #include "stateMachine.h"
+#include "heliHMI.h"
 
 //*****************************************************************************
 // Constants
@@ -45,7 +40,6 @@
 #define BUF_SIZE            100
 #define SAMPLE_RATE_HZ      1000
 #define SLOWTICK_RATE_HZ    5
-#define MAX_STR_LEN         17
 
 
 //*****************************************************************************
@@ -54,8 +48,6 @@
 circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
 volatile uint8_t slowTick = false;
-char statusStr[MAX_STR_LEN + 1];
-static uint16_t inADCMax;
 rotor_t mainRotor;
 rotor_t tailRotor;
 static int16_t desiredAlt = 0;  // Percentage.
@@ -117,94 +109,22 @@ initClock (void)
 
 
 //********************************************************
-// initAltitude - Calibrate height
+// initAltitude - Calibrate height by setting limit.
 //********************************************************
-void
+uint16_t
 initAltitude (uint16_t altRaw)
 {
-    inADCMax = altRaw - ALT_RANGE;
-}
-
-
-//********************************************************
-// handleHMI - Handle output to UART port and display.
-//********************************************************
-void
-handleHMI (uint16_t mappedAlt, int16_t mappedYaw)
-{
-    // Form and send a status message for altitude to the console
-    usnprintf (statusStr, sizeof(statusStr), "ALT: %3d [%3d]\r\n", mappedAlt, desiredAlt); // * usprintf
-    UARTSend (statusStr);
-
-    // Form and send a status message for yaw to the console
-    int16_t mappedDesiredYaw = mapYaw2Deg (desiredYaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW: %4d [%4d]\r\n", mappedYaw, mappedDesiredYaw); // * usprintf
-    UARTSend (statusStr);
-
-    usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", mainRotor.duty, tailRotor.duty); // * usprintf
-    UARTSend (statusStr);
-
-    char* state;
-    if (heliState == LANDED)
-    {
-        state = "LANDED";
-    } else if (heliState == TAKING_OFF)
-    {
-        state = "TAKING OFF";
-    } else if (heliState == FLYING)
-    {
-        state = "FLYING";
-    } else if (heliState == LANDING)
-    {
-        state = "LANDING";
-    } else
-    {
-        state = "ERROR";
-    }
-    // Leave enough space for the template, state and null terminator.
-    usnprintf (statusStr, sizeof(statusStr), "HELI: %s\r\n\n", state); // * usprintf
-    UARTSend (statusStr);
-
-    // Update OLED display with ADC and yaw value.
-    displayMeanVal (mappedAlt, desiredAlt);
-    displayYaw (mappedYaw, desiredYaw);
-    displayPWM (&mainRotor, &tailRotor);
-    displayState (heliState);
-}
-
-
-void
-controlDuty(void)
-{
-    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
-    {
-        mainRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
-    }
-    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
-    {
-        mainRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
-    }
-    if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
-    {
-        tailRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
-    }
-    if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
-    {
-        tailRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
-    }
+    return altRaw - ALT_RANGE;
 }
 
 
 int
 main(void)
 {
+    uint16_t inADCMax;
     uint16_t altRaw = 0;
     int16_t mappedAlt = 0;
-    bool init_prog = true;
+    bool    init_prog = true;
     int32_t yawError;
     int32_t altError;
     yawErrorInt = 0;
@@ -221,7 +141,6 @@ main(void)
     initPWMMain (&mainRotor); // Initialise motors with set freq and duty cycle
     initPWMTail (&tailRotor);
 
-    //
     // Enable interrupts to the processor.
     IntMasterEnable();
 
@@ -239,22 +158,22 @@ main(void)
             if (init_prog)
             {
                 init_prog = false;
-                initAltitude(readCircBuf (&g_inBuffer));
+                inADCMax = initAltitude(readCircBuf (&g_inBuffer));
             }
         }
 
         // FSM based on SW1, orientation and altitude.
         switch (heliState)
         {
-        case LANDED:
+        case LANDED:    // Turn motors off and check for SW change
             landed (&mainRotor, &tailRotor);
             break;
 
-        case TAKING_OFF:
+        case TAKING_OFF:    // Hover and find yaw ref.
             takeOff (&mainRotor, &tailRotor);
             break;
 
-        case FLYING:
+        case FLYING:    // Fly to desired position and check for SW change
             desiredAlt = updateDesiredAlt (desiredAlt);
             desiredYaw = updateDesiredYaw (desiredYaw);
             altError = calcAltError(desiredAlt, mappedAlt);
@@ -262,7 +181,7 @@ main(void)
             flight (&mainRotor, &tailRotor, altError, yawError);
             break;
 
-        case LANDING:
+        case LANDING:   // Land Heli and change to LANDED once alt < 1%
             desiredAlt = 0;
             desiredYaw = 0;
             altError = calcAltError(desiredAlt, mappedAlt);
@@ -277,7 +196,7 @@ main(void)
         {
             slowTick = false;
             int16_t mappedYaw = mapYaw2Deg(yaw);
-            handleHMI (mappedAlt, mappedYaw);
+            handleHMI (&mainRotor, &tailRotor, mappedAlt, mappedYaw, desiredAlt, desiredYaw);
         }
     }
 }

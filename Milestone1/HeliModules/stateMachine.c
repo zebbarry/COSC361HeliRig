@@ -70,8 +70,8 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
     {
        motorPower (mainRotor, false);
        motorPower (tailRotor, false);
-       mainRotor->duty = 0;
-       tailRotor->duty = 0;
+       mainRotor->duty = HOVER_DUTY_MAIN;
+       tailRotor->duty = HOVER_DUTY_TAIL;
        setPWM (mainRotor);
        setPWM (tailRotor);
     }
@@ -90,9 +90,7 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state)
     {
-        mainRotor->duty = HOVER_DUTY_MAIN;
         tailRotor->duty = HOVER_DUTY_TAIL + 5;
-        setPWM (mainRotor);
         setPWM (tailRotor);
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
@@ -130,7 +128,7 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 {
     fly (mainRotor, tailRotor, altError, yawError);
 
-    if (mappedAlt < 2)
+    if (mappedAlt < 1)
     {
         heliState = LANDED;
     }
