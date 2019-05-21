@@ -37,6 +37,8 @@ Push button signals should be asserted for at least 200ms.
 
 8.0
 Operation of the RESET button calls the SysCtlReset() in driverlib/sysctl.h
+Need to add RESET to buttons4 and poll in normal program.
+When pressed calls SysCtlReset()
 
 9.0
 Should have realtime foreground/background kernel on round robin basis. Robust behaviour at all times.
