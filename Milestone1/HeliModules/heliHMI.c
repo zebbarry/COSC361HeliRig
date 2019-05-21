@@ -53,7 +53,8 @@ handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
 
     // Form and send a status message for yaw to the console
     int16_t mappedDesiredYaw = mapYaw2Deg (desiredYaw);
-    usnprintf (statusStr, sizeof(statusStr), "YAW: %4d [%4d]\r\n", mappedYaw, mappedDesiredYaw);
+
+    usnprintf (statusStr, sizeof(statusStr), "YAW: %3d [%3d]\r\n", mappedYaw, mappedDesiredYaw);
     UARTSend (statusStr);
 
     if (main->state && tail->state)
@@ -62,6 +63,7 @@ handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
     } else {
         usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", 0, 0);
     }
+    UARTSend (statusStr);
 
     // Send status message about helicopter state
     char* state;

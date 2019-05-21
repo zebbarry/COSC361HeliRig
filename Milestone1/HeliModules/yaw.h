@@ -25,6 +25,7 @@
 //*****************************************************************************
 #define YAW_TABS 448      // Number of tabs in a full circle.
 #define DEG_CIRC 360      // Number of degrees in full circle.
+#define YAW_DEG(Y)  (2*(Y * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS
 
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0      // PB0

@@ -26,12 +26,13 @@
 #define ALT_MIN_PER         0
 #define ALT_STEP_PER        10
 #define YAW_STEP_DEG        15
+#define ROTATE_DUTY_TAIL    HOVER_DUTY_TAIL + 10
 
 //********************************************************
 // Globals
 //********************************************************
 enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
-static enum state heliState;
+enum state heliState;
 
 //********************************************************
 // updateDesiredAlt - Updates desired altitude value

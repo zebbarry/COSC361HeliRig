@@ -51,6 +51,7 @@ updateDesiredYaw(int32_t desiredYaw)
         desiredYaw += (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
         yawErrorInt = 0;
     }
+
     if (checkButton(LEFT) == PUSHED)
     {
         desiredYaw -= (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
@@ -68,17 +69,17 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (mainRotor->state || tailRotor->state)
     {
-       motorPower (mainRotor, false);
-       motorPower (tailRotor, false);
-       mainRotor->duty = HOVER_DUTY_MAIN;
-       tailRotor->duty = HOVER_DUTY_TAIL;
-       setPWM (mainRotor);
-       setPWM (tailRotor);
+        motorPower (mainRotor, false);
+        motorPower (tailRotor, false);
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = HOVER_DUTY_TAIL;
+        setPWM (mainRotor);
+        setPWM (tailRotor);
     }
 
     if (checkButton(SW) == PUSHED)
     {
-       heliState = TAKING_OFF;
+        heliState = TAKING_OFF;
     }
 }
 
@@ -90,7 +91,9 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state)
     {
-        tailRotor->duty = HOVER_DUTY_TAIL + 5;
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = ROTATE_DUTY_TAIL;
+        setPWM (mainRotor);
         setPWM (tailRotor);
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
@@ -112,6 +115,16 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 void
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
+    if (!mainRotor->state || !tailRotor->state)
+    {
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = ROTATE_DUTY_TAIL;
+        setPWM (mainRotor);
+        setPWM (tailRotor);
+        motorPower (mainRotor, true);
+        motorPower (tailRotor, true);
+    }
+
     fly (mainRotor, tailRotor, altError, yawError);
 
     if (checkButton(SW) == RELEASED)
@@ -126,6 +139,16 @@ flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawErr
 void
 land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError, int16_t mappedAlt)
 {
+    if (!mainRotor->state || !tailRotor->state)
+    {
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = ROTATE_DUTY_TAIL;
+        setPWM (mainRotor);
+        setPWM (tailRotor);
+        motorPower (mainRotor, true);
+        motorPower (tailRotor, true);
+    }
+
     fly (mainRotor, tailRotor, altError, yawError);
 
     if (mappedAlt < 1)
