@@ -20,7 +20,7 @@
 
 #define DUTYSCALER 1000
 #define PWM_MIN                 5
-#define PWM_MAX                 95
+#define PWM_MAX                 70
 
 //********************************************************
 // Global Vars
@@ -49,9 +49,9 @@ Maincontroller(rotor_t *mainRotor, int32_t target, int32_t current){
     current = current * DUTYSCALER;
     int32_t i_Max = 10000 * DUTYSCALER;
     int32_t i_Min = 0;
-    float Kp = 0.7;
-    float Ki = 0.01;
-    float Kd = 0.1;
+    float Kp = 0.5;
+    float Ki = 0.1;
+    float Kd = 0.2;
     int32_t error = target - current;
 
     // Proportional: The error times the proportional coefficent (Kp)
@@ -74,13 +74,13 @@ Maincontroller(rotor_t *mainRotor, int32_t target, int32_t current){
     // Store error to be used to calculate the change next time
     d_lastError_main = error;
 
-    // Combine the proportional, intergral and dirrivetave components and then scales back down.
+    // Combine the proportional, integral and derivative components and then scales back down.
     //      (looking at it again im not sure why this isn't just "P + I + D" as the previous
     //      duty cycle shouldn't matter, I'll test changing this)
     int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
 
     // Limit the duty cycle to between 95 and 5
-    if (PWM_Duty > 80) PWM_Duty = PWM_MAX;
+    if (PWM_Duty > 70) PWM_Duty = PWM_MAX;
     else if (PWM_Duty < 5) PWM_Duty = PWM_MIN;
 
     PWM_last_main = PWM_Duty;
@@ -97,9 +97,9 @@ Tailcontroller(rotor_t *tailRotor, int32_t target, int32_t current){
     current = current * DUTYSCALER;
     int32_t i_Max = 10000 * DUTYSCALER;
     int32_t i_Min = 0;
-    float Kp = 0.7;
-    float Ki = 0.03;
-    float Kd = 0.1;
+    float Kp = 0.2;
+    float Ki = 0.1;
+    float Kd = 0.08;
     int32_t error = target - current;
 
     // Proportional
@@ -122,7 +122,7 @@ Tailcontroller(rotor_t *tailRotor, int32_t target, int32_t current){
     int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
 
     // Limit PWM to specification
-    if (PWM_Duty > 80) PWM_Duty = PWM_MAX;
+    if (PWM_Duty > 70) PWM_Duty = PWM_MAX;
     else if (PWM_Duty < 5) PWM_Duty = PWM_MIN;
 
     PWM_last_tail = PWM_Duty;
