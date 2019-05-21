@@ -49,6 +49,7 @@ static bool debug = false;
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
 //*****************************************************************************
+
 void
 updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
 

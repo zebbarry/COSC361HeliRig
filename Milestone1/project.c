@@ -202,9 +202,9 @@ main(void)
             heliState = 4;
 
             desiredYaw = updateDesiredYaw (desiredYaw);
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
-            updateMotors (&mainRotor, &tailRotor, altError, yawError);
+            //altError = calcAltError(desiredAlt, mappedAlt);
+            //yawError = calcYawError(desiredYaw, yaw);
+            fly (&mainRotor, &tailRotor, altError, yawError);
         }
 
         // FSM based on SW1, orientation and altitude.
@@ -221,8 +221,8 @@ main(void)
         case FLYING:    // Fly to desired position and check for SW change
             desiredAlt = updateDesiredAlt (desiredAlt);
             desiredYaw = updateDesiredYaw (desiredYaw);
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
+            //altError = calcAltError(desiredAlt, mappedAlt);
+            //yawError = calcYawError(desiredYaw, yaw);
             flight (&mainRotor, &tailRotor, altError, yawError);
             break;
 
