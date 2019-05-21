@@ -33,7 +33,7 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
     yawErrorPrev = yawError;
 
     newMainDuty = HOVER_DUTY_MAIN + (2*altError*P_GAIN_MAIN_MUL + P_GAIN_MAIN) / 2 / P_GAIN_MAIN;   // Proportional
-    //newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;                         // Integral
+    newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;                         // Integral
     //newMainDuty += (2*altErrorDer + D_GAIN_MAIN) / 2 / D_GAIN_MAIN;                       // Derivative
 
     newTailDuty = HOVER_DUTY_TAIL + (2*yawError*P_GAIN_TAIL_MUL + P_GAIN_TAIL) / 2 / P_GAIN_TAIL;   // Proportional

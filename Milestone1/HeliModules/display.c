@@ -81,7 +81,7 @@ displayYaw(int16_t mappedYaw, int16_t desiredYaw)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "YAW: %3d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw));
+    usnprintf (string, sizeof(string), "YAW:%4d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw));
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
