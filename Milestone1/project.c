@@ -117,6 +117,33 @@ initAltitude (uint16_t altRaw)
     return altRaw - ALT_RANGE;
 }
 
+void
+controlDuty(void)
+{
+
+    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
+    {
+        mainRotor.duty += PWM_DUTY_STEP_PER;
+        setPWM (&mainRotor);
+    }
+    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
+    {
+        mainRotor.duty -= PWM_DUTY_STEP_PER;
+        setPWM (&mainRotor);
+    }/*
+    if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
+    {
+        tailRotor.duty += PWM_DUTY_STEP_PER;
+        setPWM (&tailRotor);
+    }
+    if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
+    {
+        tailRotor.duty -= PWM_DUTY_STEP_PER;
+        setPWM (&tailRotor);
+    }*/
+}
+
+
 
 int
 main(void)
@@ -140,6 +167,10 @@ main(void)
     initCircBuf (&g_inBuffer, BUF_SIZE);
     initPWMMain (&mainRotor); // Initialise motors with set freq and duty cycle
     initPWMTail (&tailRotor);
+    if (debug) {
+        motorPower (&mainRotor, true);
+        motorPower (&tailRotor, true);
+    }
 
     // Enable interrupts to the processor.
     IntMasterEnable();
@@ -160,6 +191,16 @@ main(void)
                 init_prog = false;
                 inADCMax = initAltitude(readCircBuf (&g_inBuffer));
             }
+        }
+
+        if (debug) {
+            controlDuty();
+            heliState = 4;
+
+            desiredYaw = updateDesiredYaw (desiredYaw);
+            altError = calcAltError(desiredAlt, mappedAlt);
+            yawError = calcYawError(desiredYaw, yaw);
+            updateMotors (&mainRotor, &tailRotor, altError, yawError);
         }
 
         // FSM based on SW1, orientation and altitude.

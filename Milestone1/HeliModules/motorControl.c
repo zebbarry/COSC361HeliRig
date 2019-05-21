@@ -23,20 +23,22 @@
 void
 updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
+    int32_t newMainDuty;
+    int32_t newTailDuty;
     // Calculate derivative error
-    int32_t altErrorDer = (altError - altErrorPrev) * TIME_STEP;
-    int32_t yawErrorDer = (yawError - yawErrorPrev) * TIME_STEP;
+    int32_t altErrorDer = (altError - altErrorPrev);
+    int32_t yawErrorDer = (yawError - yawErrorPrev);
 
     altErrorPrev = altError;
     yawErrorPrev = yawError;
 
-    int32_t newMainDuty = HOVER_DUTY_MAIN + (2*altError*P_GAIN_MAIN_MUL + P_GAIN_MAIN) / 2 / P_GAIN_MAIN;   // Proportional
-    newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;                         // Integral
-    newMainDuty += (2*altErrorDer + D_GAIN_MAIN) / 2 / D_GAIN_MAIN;                       // Derivative
+    newMainDuty = HOVER_DUTY_MAIN + (2*altError*P_GAIN_MAIN_MUL + P_GAIN_MAIN) / 2 / P_GAIN_MAIN;   // Proportional
+    //newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;                         // Integral
+    //newMainDuty += (2*altErrorDer + D_GAIN_MAIN) / 2 / D_GAIN_MAIN;                       // Derivative
 
-    int32_t newTailDuty = HOVER_DUTY_TAIL + (2*yawError*P_GAIN_TAIL_MUL + P_GAIN_TAIL) / 2 / P_GAIN_TAIL;   // Proportional
-    //newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;                         // Integral
-    newTailDuty += (2*yawErrorDer + D_GAIN_TAIL) / 2 / D_GAIN_TAIL;                       // Derivative
+    newTailDuty = HOVER_DUTY_TAIL + (2*yawError*P_GAIN_TAIL_MUL + P_GAIN_TAIL) / 2 / P_GAIN_TAIL;   // Proportional
+    newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;                         // Integral
+    //newTailDuty += (2*yawErrorDer + D_GAIN_TAIL) / 2 / D_GAIN_TAIL;                       // Derivative
 
     // Check duty cycles are within range
     if (newMainDuty > PWM_DUTY_MAX_PER)
@@ -62,9 +64,11 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
     }
 
     // Set new duty cycles
-    mainRotor->duty = newMainDuty;
+    if (!debug) {
+        mainRotor->duty = newMainDuty;
+        setPWM(mainRotor);
+    }
     tailRotor->duty = newTailDuty;
-    setPWM(mainRotor);
     setPWM(tailRotor);
 }
 

@@ -89,7 +89,7 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
 void
 takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
-    if (!mainRotor->state || !tailRotor->state)
+    if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
     {
         mainRotor->duty = HOVER_DUTY_MAIN;
         tailRotor->duty = ROTATE_DUTY_TAIL;

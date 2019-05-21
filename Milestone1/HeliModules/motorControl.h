@@ -28,13 +28,13 @@
 #define I_GAIN_MAIN     20000  // Integral Gain for main rotor
 #define D_GAIN_MAIN     2      // Derivative Gain for main rotor
 
-#define P_GAIN_TAIL     1      // Proportional Gain for tail rotor
-#define P_GAIN_TAIL_MUL 2
-#define I_GAIN_TAIL     25000  // Integral Gain for tail rotor
+#define P_GAIN_TAIL     4      // Proportional Gain for tail rotor
+#define P_GAIN_TAIL_MUL 3
+#define I_GAIN_TAIL     13333  // Integral Gain for tail rotor
 #define D_GAIN_TAIL     2      // Derivative Gain for tail rotor
 
-#define HOVER_DUTY_MAIN 43     // Hover duty cycle for main
-#define HOVER_DUTY_TAIL 30     // Hover duty cycle for tail
+#define HOVER_DUTY_MAIN 40     // Hover duty cycle for main
+#define HOVER_DUTY_TAIL 32     // Hover duty cycle for tail
 #define TIME_STEP       1000   // Time step between samples of derivative
 
 //*****************************************************************************
@@ -44,6 +44,7 @@ static int32_t yawErrorInt;
 static int32_t altErrorInt;
 static int32_t yawErrorPrev;
 static int32_t altErrorPrev;
+static bool debug = false;
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
