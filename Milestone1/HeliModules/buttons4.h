@@ -51,7 +51,7 @@ enum butStates {RELEASED = 0, PUSHED, NO_CHANGE};
 #define RESET_PERIPH       SYSCTL_PERIPH_GPIOA
 #define RESET_PORT_BASE    GPIO_PORTA_BASE
 #define RESET_PIN          GPIO_PIN_6
-#define RESET_BUT_NORMAL   false
+#define RESET_BUT_NORMAL   true
 
 #define NUM_BUT_POLLS 3
 // Debounce algorithm: A state machine is associated with each button.
