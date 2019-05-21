@@ -45,9 +45,9 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
     {
         newMainDuty = PWM_DUTY_MAX_PER;
     }
-    else if (newMainDuty < PWM_DUTY_MIN_PER)
+    else if (newMainDuty < PWM_DUTY_MIN_MAIN_PER)
     {
-        newMainDuty = PWM_DUTY_MIN_PER;
+        newMainDuty = PWM_DUTY_MIN_MAIN_PER;
     } else {
         altErrorInt += altError;
     }
