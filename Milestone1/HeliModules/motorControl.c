@@ -46,7 +46,10 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
     else if (newMainDuty < PWM_DUTY_MIN_PER)
     {
         newMainDuty = PWM_DUTY_MIN_PER;
+    } else {
+        altErrorInt += altError;
     }
+
     if (newTailDuty > PWM_DUTY_MAX_PER)
     {
         newTailDuty = PWM_DUTY_MAX_PER;
@@ -54,6 +57,8 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
     else if (newTailDuty < PWM_DUTY_MIN_PER)
     {
         newTailDuty = PWM_DUTY_MIN_PER;
+    } else {
+        yawErrorInt += yawError;
     }
 
     // Set new duty cycles
@@ -99,6 +104,5 @@ calcYawError(int32_t desiredYaw, int32_t actualYaw)
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    integrate (altError, yawError);
     updateMotors (mainRotor, tailRotor, altError, yawError);
 }
