@@ -207,14 +207,6 @@ main(void)
             updateMotors (&mainRotor, &tailRotor, altError, yawError);
         }
 
-<<<<<<< HEAD
-=======
-        if (checkButton(RESET) == PUSHED) {
-            //SysCtlReset();
-            continue;
-        }
->>>>>>> 4bfd6ec1430be2803010c831481258fe8e8f4381
-
         // FSM based on SW1, orientation and altitude.
         switch (heliState)
         {
