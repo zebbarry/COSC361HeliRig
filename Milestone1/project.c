@@ -204,7 +204,8 @@ main(void)
         }
 
         if (checkButton(RESET) == PUSHED) {
-            SysCtlReset();
+            //SysCtlReset();
+            continue;
         }
 
         // FSM based on SW1, orientation and altitude.
