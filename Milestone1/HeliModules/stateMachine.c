@@ -91,8 +91,8 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
     {
-        mainRotor->duty = 5;
-        tailRotor->duty = 15;
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = ROTATE_DUTY_TAIL;
         setPWM (mainRotor);
         setPWM (tailRotor);
         motorPower (mainRotor, true);
@@ -117,10 +117,6 @@ flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawErr
 {
     if (!mainRotor->state || !tailRotor->state)
     {
-        mainRotor->duty = HOVER_DUTY_MAIN;
-        tailRotor->duty = ROTATE_DUTY_TAIL;
-        setPWM (mainRotor);
-        setPWM (tailRotor);
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
     }
@@ -141,10 +137,6 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 {
     if (!mainRotor->state || !tailRotor->state)
     {
-        mainRotor->duty = HOVER_DUTY_MAIN;
-        tailRotor->duty = ROTATE_DUTY_TAIL;
-        setPWM (mainRotor);
-        setPWM (tailRotor);
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
     }
