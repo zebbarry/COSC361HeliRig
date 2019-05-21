@@ -18,13 +18,11 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "driverlib/pin_map.h"
 
 /**********************************************************
  * Constants
  **********************************************************/
-// Systick Configuration
-#define SYSTICK_RATE_HZ    100
-
 // PWM Configuration
 #define PWM_MAIN_FREQ_HZ   250
 #define PWM_TAIL_FREQ_HZ   200

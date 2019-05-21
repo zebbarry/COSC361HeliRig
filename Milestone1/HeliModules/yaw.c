@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stdlib.h"
+#include <stdlib.h>
 #include "inc/hw_memmap.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
@@ -88,6 +88,7 @@ yawRefIntHandler(void)
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE_REF, true);
 
     hitYawRef = true;
+    yaw = 0;
 
     GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
 }

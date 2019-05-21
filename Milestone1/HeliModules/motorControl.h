@@ -23,18 +23,25 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define P_GAIN_MAIN  1      // Proportional Gain for main rotor
-#define I_GAIN_MAIN  100000    // Integral Gain for main rotor
-#define P_GAIN_TAIL  3      // Proportional Gain for tail rotor
-#define I_GAIN_TAIL  33333    // Integral Gain for tail rotor
-#define HOVER_DUTY_MAIN 43  // Hover duty cycle for main
-#define HOVER_DUTY_TAIL 30  // Hover duty cycle for tail
+#define P_GAIN_MAIN     1      // Proportional Gain for main rotor
+#define I_GAIN_MAIN     50000  // Integral Gain for main rotor
+#define D_GAIN_MAIN     2      // Derivative Gain for main rotor
+
+#define P_GAIN_TAIL     3      // Proportional Gain for tail rotor
+#define I_GAIN_TAIL     33333  // Integral Gain for tail rotor
+#define D_GAIN_MAIN     2      // Derivative Gain for tail rotor
+
+#define HOVER_DUTY_MAIN 43     // Hover duty cycle for main
+#define HOVER_DUTY_TAIL 30     // Hover duty cycle for tail
+#define TIME_STEP       1000   // Time step between samples of derivative
 
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
 static int32_t yawErrorInt;
 static int32_t altErrorInt;
+static int32_t yawErrorPrev;
+static int32_t altErrorPrev;
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
@@ -59,5 +66,11 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt);
 //*****************************************************************************
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw);
+
+//********************************************************
+// fly - Controls heli to desired position and angle
+//********************************************************
+void
+fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
 
 #endif /* MOTORCONTROL_H_ */

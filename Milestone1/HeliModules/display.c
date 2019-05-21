@@ -20,6 +20,7 @@
 #include "display.h"
 #include "yaw.h"
 #include "heliPWM.h"
+#include "stateMachine.h"
 
 //*****************************************************************************
 // Global variables
@@ -50,9 +51,9 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 // Function to map input ADC value to altitude range in percent.
 //*****************************************************************************
 int16_t
-mapAlt(uint16_t meanVal, uint16_t inADC_max)
+mapAlt(uint16_t meanVal, uint16_t inADCMax)
 {
-    int16_t scaledVal = ALT_RANGE - (meanVal - inADC_max);
+    int16_t scaledVal = ALT_RANGE - (meanVal - inADCMax);
     int16_t mappedVal = map(scaledVal, 0, ALT_RANGE, outADC_min, outADC_max);
 
     return mappedVal;
@@ -62,13 +63,11 @@ mapAlt(uint16_t meanVal, uint16_t inADC_max)
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t desiredAlt, uint16_t inADC_max)
+displayMeanVal(int16_t mappedAlt, uint16_t desiredAlt)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    int16_t mappedVal = mapAlt(meanVal, inADC_max);
-
-    usnprintf (string, sizeof(string), "ALT: %3d [%3d]\n", mappedVal, desiredAlt);
+    usnprintf (string, sizeof(string), "ALT: %3d [%3d]\n", mappedAlt, desiredAlt);
 
     // Update line on display.
     OLEDStringDraw (string, 0, 1);
@@ -108,23 +107,26 @@ displayPWM(rotor_t *main, rotor_t *tail)
 // Function to display the helicopter state
 //*****************************************************************************
 void
-displayState(uint16_t heliState)
+displayState(enum state heliState)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
     char* state;
 
-    if (heliState == 0)
+    if (heliState == LANDED)
     {
         state = "LD";
-    } else if (heliState == 1)
+    } else if (heliState == TAKING_OFF)
     {
         state = "TF";
-    } else if (heliState == 2)
+    } else if (heliState == FLYING)
     {
         state = "FL";
-    } else
+    } else if (heliState == LANDING)
     {
         state = "LG";
+    } else
+    {
+        state = "ER";
     }
 
     usnprintf (string, sizeof(string), "Heli State: %s", state);

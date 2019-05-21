@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "heliPWM.h"
+#include "stateMachine.h"
 
 //*****************************************************************************
 // Constants
@@ -41,13 +42,13 @@ map(int16_t val, uint16_t min_in, uint16_t max_in, uint16_t min_out, uint16_t ma
 // Function to map input ADC value to altitude range in percent.
 //*****************************************************************************
 int16_t
-mapAlt(uint16_t meanVal, uint16_t inADC_max);
+mapAlt(uint16_t meanVal, uint16_t inADCMax);
 
 //*****************************************************************************
 // Function to display the mean ADC value (10-bit value, note) and sample count.
 //*****************************************************************************
 void
-displayMeanVal(uint16_t meanVal, uint16_t desiredAlt, uint16_t inADC_max);
+displayMeanVal(int16_t mappedAlt, uint16_t desiredAlt);
 
 //*****************************************************************************
 // Function to display the yaw value in degrees to display
@@ -65,6 +66,6 @@ displayPWM(rotor_t *main, rotor_t *tail);
 // Function to display the helicopter state
 //*****************************************************************************
 void
-displayState(uint16_t heliState);
+displayState(enum state heliState);
 
 #endif /*DISPLAY_H_*/

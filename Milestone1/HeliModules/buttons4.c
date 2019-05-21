@@ -61,9 +61,9 @@ initButtons (void)
        GPIO_PIN_TYPE_STD_WPU);
     but_normal[LEFT] = LEFT_BUT_NORMAL;
     // RIGHT button (active LOW)
-      // Note that PF0 is one of a handful of GPIO pins that need to be
-      // "unlocked" before they can be reconfigured.  This also requires
-      //      #include "inc/tm4c123gh6pm.h"
+    // Note that PF0 is one of a handful of GPIO pins that need to be
+    // "unlocked" before they can be reconfigured.  This also requires
+    //      #include "inc/tm4c123gh6pm.h"
     SysCtlPeripheralEnable (RIGHT_BUT_PERIPH);
     //---Unlock PF0 for the right button:
     GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;
@@ -74,11 +74,11 @@ initButtons (void)
        GPIO_PIN_TYPE_STD_WPU);
     but_normal[RIGHT] = RIGHT_BUT_NORMAL;
 
-    // SW button
+    // STATE SWITCH
     SysCtlPeripheralEnable (SW_PERIPH);
     GPIOPinTypeGPIOInput (SW_PORT_BASE, SW_PIN);
     GPIOPadConfigSet (SW_PORT_BASE, SW_PIN, GPIO_STRENGTH_2MA,
-    GPIO_PIN_TYPE_STD_WPD);
+                      GPIO_PIN_TYPE_STD_WPD);
     but_normal[SW] = SW_BUT_NORMAL;
 
 	for (i = 0; i < NUM_BUTS; i++)
