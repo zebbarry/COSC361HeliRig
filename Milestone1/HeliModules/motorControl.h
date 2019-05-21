@@ -24,11 +24,11 @@
 // Constants
 //*****************************************************************************
 #define P_GAIN_MAIN     1      // Proportional Gain for main rotor
-#define P_GAIN_MAIN_MUL 4
+#define P_GAIN_MAIN_MUL 2
 #define I_GAIN_MAIN     20000  // Integral Gain for main rotor
 #define D_GAIN_MAIN     2      // Derivative Gain for main rotor
 
-#define P_GAIN_TAIL     1      // Proportional Gain for tail rotor
+#define P_GAIN_TAIL     3      // Proportional Gain for tail rotor
 #define P_GAIN_TAIL_MUL 2
 #define I_GAIN_TAIL     25000  // Integral Gain for tail rotor
 #define D_GAIN_TAIL     2      // Derivative Gain for tail rotor
