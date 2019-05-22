@@ -42,7 +42,7 @@ mainController(rotor_t *mainRotor, int32_t error)
     int32_t errorIntMin = 0;
     float Kp = 0.5;
     float Ki = 0.1;
-    float Kd = 0.2;
+    float Kd = 0.3;
 
     // Proportional: The error times the proportional coefficent (Kp)
     int32_t P = error * Kp;
@@ -86,8 +86,8 @@ tailController(rotor_t *tailRotor, int32_t error)
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
     float Kp = 0.2;
-    float Ki = 0.1;
-    float Kd = 0.08;
+    float Ki = 0.2;
+    float Kd = 0.2;
 
     // Proportional
     int32_t P = error * Kp;
