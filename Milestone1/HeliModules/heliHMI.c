@@ -66,25 +66,9 @@ handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
     UARTSend (statusStr);
 
     // Send status message about helicopter state
-    char* state;
-    if (heliState == LANDED)
-    {
-        state = "LANDED";
-    } else if (heliState == TAKING_OFF)
-    {
-        state = "TAKING OFF";
-    } else if (heliState == FLYING)
-    {
-        state = "FLYING";
-    } else if (heliState == LANDING)
-    {
-        state = "LANDING";
-    } else
-    {
-        state = "ERROR";
-    }
+    char *state[] = {"LANDED", "TAKE OFF", "FLYING", "LANDING", "ERROR"};
 
     // Leave enough space for the template, state and null terminator.
-    usnprintf (statusStr, sizeof(statusStr), "HELI: %s\r\n\n", state);
+    usnprintf (statusStr, sizeof(statusStr), "HELI: %s\r\n\n", state[heliState]);
     UARTSend (statusStr);
 }

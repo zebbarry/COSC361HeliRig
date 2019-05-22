@@ -80,9 +80,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 {
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.3;
-    float Ki = 0.5;
-    float Kd = 0.5;
+    float Kp = 0.5;
+    float Ki = 0.1;
+    float Kd = 0.2;
 
     // Proportional
     int32_t P = error * Kp;
