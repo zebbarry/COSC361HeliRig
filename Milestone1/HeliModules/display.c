@@ -115,26 +115,9 @@ void
 displayState(enum state heliState)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
-    char* state;
+    char* state[] = {"LD", "TF", "FL", "LG", "ER"};
 
-    if (heliState == LANDED)
-    {
-        state = "LD";
-    } else if (heliState == TAKING_OFF)
-    {
-        state = "TF";
-    } else if (heliState == FLYING)
-    {
-        state = "FL";
-    } else if (heliState == LANDING)
-    {
-        state = "LG";
-    } else
-    {
-        state = "ER";
-    }
-
-    usnprintf (string, sizeof(string), "Heli State: %s", state);
+    usnprintf (string, sizeof(string), "Heli State: %s", state[heliState]);
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 3);
