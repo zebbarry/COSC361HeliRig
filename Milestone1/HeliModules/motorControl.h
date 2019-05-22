@@ -38,7 +38,7 @@ static int32_t yawErrorInt;
 static int32_t altErrorInt;
 static int32_t yawErrorPrev;
 static int32_t altErrorPrev;
-static bool debug = true;
+static bool debug = false;
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.

@@ -54,13 +54,6 @@ initPWMMain (rotor_t *rotor)
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
     PWMOutputState(PWM_MAIN_BASE, PWM_MAIN_OUTBIT, rotor->state);
-
-    // Calculate the PWM period corresponding to the freq.
-    ui32Period = SysCtlClockGet() / PWM_DIVIDER / rotor->freq;
-
-    PWMGenPeriodSet(PWM_MAIN_BASE, PWM_MAIN_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_MAIN_BASE, PWM_MAIN_OUTNUM,
-        ui32Period * rotor->duty / 100);
 }
 
 /*********************************************************
@@ -92,13 +85,6 @@ initPWMTail (rotor_t *rotor)
 
     // Disable the output.  Repeat this call with 'true' to turn O/P on.
     PWMOutputState(PWM_TAIL_BASE, PWM_TAIL_OUTBIT, rotor->state);
-
-    // Calculate the PWM period corresponding to the freq.
-    ui32Period = SysCtlClockGet() / PWM_DIVIDER / rotor->freq;
-
-    PWMGenPeriodSet(PWM_TAIL_BASE, PWM_TAIL_GEN, ui32Period);
-    PWMPulseWidthSet(PWM_TAIL_BASE, PWM_TAIL_OUTNUM,
-        ui32Period * rotor->duty / 100);
 }
 
 

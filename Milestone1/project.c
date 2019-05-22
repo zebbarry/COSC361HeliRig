@@ -33,13 +33,16 @@
 #include "motorControl.h"
 #include "stateMachine.h"
 #include "heliHMI.h"
+#include "heliTimer.h"
+#include "kernel.h"
 
 //*****************************************************************************
 // Constants
 //*****************************************************************************
 #define BUF_SIZE            100
 #define SAMPLE_RATE_HZ      1000
-#define SLOWTICK_RATE_HZ    8
+#define DISPLAY_RATE        8
+#define CONTROLLER_RATE     300
 
 
 //*****************************************************************************
@@ -134,17 +137,7 @@ controlDuty(void)
     {
         mainRotor.duty -= PWM_DUTY_STEP_PER;
         setPWM (&mainRotor);
-    }/*
-    if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
-    {
-        tailRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
     }
-    if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
-    {
-        tailRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
-    }*/
 }
 
 
