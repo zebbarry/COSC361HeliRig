@@ -262,7 +262,7 @@ main(void)
         {
             slowTick = false;
             int16_t mappedYaw = mapYaw2Deg(yaw, false);
-            handleHMI (&mainRotor, &tailRotor, mappedAlt, mappedYaw, desiredAlt, desiredYaw);
+            handleHMI (&mainRotor, &tailRotor, yawError, mappedYaw, desiredAlt, desiredYaw);
         }
     }
 }

@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "motorControl.h"
+#include "yaw.h"
 
 //********************************************************
 // Global Vars
@@ -34,8 +35,8 @@ mainController(rotor_t *mainRotor, int32_t error)
     // because decimals are inacurate and even small changes from rounding could be a problem
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.6;
-    float Ki = 0.1;
+    float Kp = 0.3;
+    float Ki = 0.5;
     float Kd = 0.1;
 
     // Proportional: The error times the proportional coefficent (Kp)
@@ -81,7 +82,7 @@ tailController(rotor_t *tailRotor, int32_t error)
     int32_t errorIntMin = 0;
     float Kp = 0.3;
     float Ki = 0.5;
-    float Kd = 0.3;
+    float Kd = 0.5;
 
     // Proportional
     int32_t P = error * Kp;
@@ -153,7 +154,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
-    int32_t error = (desiredYaw * DUTYSCALER) - (actualYaw * DUTYSCALER);
+    int32_t error = (desiredYaw * DUTYSCALER) - (YAW_DEG(actualYaw) * DUTYSCALER);
 
     return error;
 }
