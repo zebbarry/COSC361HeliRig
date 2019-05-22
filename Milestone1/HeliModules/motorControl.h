@@ -24,9 +24,9 @@
 // Constants
 //*****************************************************************************
 #define HOVER_DUTY_MAIN     25     // Hover duty cycle for main
-#define ROTATE_DUTY_TAIL    32     // Hover duty cycle for tail
+#define ROTATE_DUTY_TAIL    28     // Hover duty cycle for tail
 #define TIME_STEP           1000   // Time step between samples of derivative
-#define DROP_ALT_STEP       2
+#define DROP_ALT_STEP       4
 
 //*****************************************************************************
 // Global variables

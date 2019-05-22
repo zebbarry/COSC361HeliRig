@@ -238,8 +238,12 @@ main(void)
             break;
 
         case LANDING:   // Land Heli and change to LANDED once alt < 1%
-            if (desiredAlt - DROP_ALT_STEP > 0 && slowTick) {
+            if (desiredAlt - DROP_ALT_STEP > 0 && slowTick)
+            {
                 desiredAlt = desiredAlt - DROP_ALT_STEP;
+            } else if (desiredAlt - DROP_ALT_STEP < 0)
+            {
+                desiredAlt = 0;
             }
             altError = calcAltError(desiredAlt, mappedAlt);
             yawError = calcYawError(desiredYaw, YAW_DEG(yaw));

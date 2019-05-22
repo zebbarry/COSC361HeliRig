@@ -40,9 +40,9 @@ mainController(rotor_t *mainRotor, int32_t error)
     // because decimals are inacurate and even small changes from rounding could be a problem
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.5;
+    float Kp = 0.6;
     float Ki = 0.1;
-    float Kd = 0.3;
+    float Kd = 0.1;
 
     // Proportional: The error times the proportional coefficent (Kp)
     int32_t P = error * Kp;
@@ -71,7 +71,7 @@ mainController(rotor_t *mainRotor, int32_t error)
 
     // Limit the duty cycle to between 95 and 5
     if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
-    else if (PWM_Duty < PWM_MIN) PWM_Duty = PWM_MIN;
+    else if (PWM_Duty < 25) PWM_Duty = 25;
 
     PWMLastMain = PWM_Duty;
 
@@ -85,9 +85,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 {
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.2;
-    float Ki = 0.2;
-    float Kd = 0.2;
+    float Kp = 0.3;
+    float Ki = 0.5;
+    float Kd = 0.3;
 
     // Proportional
     int32_t P = error * Kp;
