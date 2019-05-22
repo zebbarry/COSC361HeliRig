@@ -51,7 +51,7 @@ mainController(rotor_t *mainRotor, int32_t error)
     altErrorInt += error / DUTYSCALER;
 
     // Limit the summed error to between i_max and i_min
-    if (altErrorInt > errorIntMax || mainRotor->duty > PWM_MAX) altErrorInt = errorIntMax;
+    if (altErrorInt > errorIntMax) altErrorInt = errorIntMax;
     else if (altErrorInt < errorIntMin) altErrorInt = errorIntMin;
 
     // Integral: Multiply the sum by the integral coefficent (Ki)
@@ -93,11 +93,14 @@ tailController(rotor_t *tailRotor, int32_t error)
     int32_t P = error * Kp;
 
     // Integral
-    yawErrorInt += error / DUTYSCALER;
+    if (tailRotor->duty < PWM_MAX && tailRotor->duty > PWM_MIN)
+    {
+        yawErrorInt += error / DUTYSCALER;
+    }
 
     // Limit sum
-    if (yawErrorInt > errorIntMax || tailRotor->duty > PWM_MAX) yawErrorInt = errorIntMax;
-    else if (yawErrorInt < errorIntMin || tailRotor->duty < PWM_MIN) yawErrorInt = errorIntMin;
+    if (yawErrorInt > errorIntMax) yawErrorInt = errorIntMax;
+    else if (yawErrorInt < errorIntMin) yawErrorInt = errorIntMin;
 
     // Integral
     int32_t I = Ki * yawErrorInt;
@@ -125,7 +128,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    mainController (mainRotor, altError);
+    if (!debug) {
+        mainController (mainRotor, altError);
+    }
     tailController (tailRotor, yawError);
 }
 
