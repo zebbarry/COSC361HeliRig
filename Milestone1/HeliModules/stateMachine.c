@@ -71,10 +71,6 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
     {
         motorPower (mainRotor, false);
         motorPower (tailRotor, false);
-        mainRotor->duty = HOVER_DUTY_MAIN;
-        tailRotor->duty = HOVER_DUTY_TAIL;
-        setPWM (mainRotor);
-        setPWM (tailRotor);
     }
 
     if (checkButton(SW) == PUSHED)
@@ -91,8 +87,8 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
     {
-        mainRotor->duty = HOVER_DUTY_MAIN-10;
-        tailRotor->duty = ROTATE_DUTY_TAIL-10;
+        mainRotor->duty = HOVER_DUTY_MAIN;
+        tailRotor->duty = ROTATE_DUTY_TAIL;
         setPWM (mainRotor);
         setPWM (tailRotor);
         motorPower (mainRotor, true);
@@ -101,16 +97,13 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 
     if (hitYawRef)
     {
-        tailRotor->duty = HOVER_DUTY_TAIL;
-        setPWM (tailRotor);
         hitYawRef = false;
-
         heliState = FLYING;
     }
 }
 
 //********************************************************
-// flyController - Flys helicopter checking for switch.
+// flight - Flys helicopter checking for switch.
 //********************************************************
 void
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
@@ -143,7 +136,7 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 
     fly (mainRotor, tailRotor, altError, yawError);
 
-    if (mappedAlt < 1)
+    if (mappedAlt < 1 && abs(yawError) < 1)
     {
         heliState = LANDED;
     }

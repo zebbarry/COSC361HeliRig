@@ -34,18 +34,15 @@ int32_t PWMLastTail = 0;              //
 //*****************************************************************************
 // PID controller for the main motor
 void
-Maincontroller(rotor_t *mainRotor, int32_t target, int32_t current){
-
+mainController(rotor_t *mainRotor, int32_t error)
+{
     // Scales the values up by a constant so for example 1000 * 0.01 can be 1010 instead of 1 * 0.01 getting 1.01
     // because decimals are inacurate and even small changes from rounding could be a problem
-    target = target * DUTYSCALER;
-    current = current * DUTYSCALER;
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
     float Kp = 0.5;
     float Ki = 0.1;
     float Kd = 0.2;
-    int32_t error = calcAltError (target, current);
 
     // Proportional: The error times the proportional coefficent (Kp)
     int32_t P = error * Kp;
@@ -84,16 +81,13 @@ Maincontroller(rotor_t *mainRotor, int32_t target, int32_t current){
 
 // PID controller for the tail motor [ See above for comments ]
 void
-Tailcontroller(rotor_t *tailRotor, int32_t target, int32_t current){
-
-    target = target * DUTYSCALER;
-    current = current * DUTYSCALER;
+tailController(rotor_t *tailRotor, int32_t error)
+{
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
     float Kp = 0.2;
     float Ki = 0.1;
     float Kd = 0.08;
-    int32_t error = calcYawError(target, current);
 
     // Proportional
     int32_t P = error * Kp;
@@ -131,8 +125,8 @@ Tailcontroller(rotor_t *tailRotor, int32_t target, int32_t current){
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    Maincontroller (mainRotor, altError, yawError);
-    Tailcontroller (tailRotor, altError, yawError);
+    mainController (mainRotor, altError);
+    tailController (tailRotor, yawError);
 }
 
 //*****************************************************************************
@@ -151,7 +145,7 @@ integrate(int32_t altError, int32_t yawError)
 int32_t
 calcAltError(int32_t desiredAlt, int32_t actualAlt)
 {
-    return desiredAlt - actualAlt;
+    return (desiredAlt * DUTYSCALER) - (actualAlt * DUTYSCALER);
 }
 
 //*****************************************************************************
@@ -160,7 +154,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
-    int16_t error = desiredYaw - actualYaw;
+    int16_t error = (desiredYaw * DUTYSCALER) - (actualYaw * DUTYSCALER);
 
     return error;
 }

@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "motorControl.h"
-
+/*
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
 //*****************************************************************************
@@ -109,4 +109,4 @@ void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
     updateMotors (mainRotor, tailRotor, altError, yawError);
-}
+}*/

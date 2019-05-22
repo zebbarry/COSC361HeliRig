@@ -221,28 +221,20 @@ main(void)
         case FLYING:    // Fly to desired position and check for SW change
             desiredAlt = updateDesiredAlt (desiredAlt);
             desiredYaw = updateDesiredYaw (desiredYaw);
-            //altError = calcAltError(desiredAlt, mappedAlt);
-            //yawError = calcYawError(desiredYaw, yaw);
-            Tailcontroller (&tailRotor, desiredYaw, yaw);
-            Maincontroller (&mainRotor, desiredAlt, mappedAlt);
-
-            if (checkButton(SW) == RELEASED)
-            {
-                heliState = LANDING;
-            }
+            altError = calcAltError(desiredAlt, mappedAlt);
+            yawError = calcYawError(desiredYaw, yaw);
+            flight (&mainRotor, &tailRotor, altError, yawError);
 
             break;
 
         case LANDING:   // Land Heli and change to LANDED once alt < 1%
-            desiredAlt = updateDesiredAlt (desiredAlt);
-            if (updateDesiredAlt (desiredAlt) - 20 > 0) {
-                desiredAlt = updateDesiredAlt (desiredAlt) - 20;
+            if (desiredAlt - 2 > 0 && slowTick) {
+                desiredAlt = desiredAlt - 2;
             }
-            desiredYaw = updateDesiredYaw (desiredYaw);
-            //altError = calcAltError(desiredAlt, mappedAlt);
-            //yawError = calcYawError(desiredYaw, yaw);
-            Tailcontroller (&tailRotor, desiredYaw, yaw);
-            Maincontroller (&mainRotor, desiredAlt, mappedAlt);
+            desiredYaw = 0;
+            altError = calcAltError(desiredAlt, mappedAlt);
+            yawError = calcYawError(desiredYaw, yaw);
+            land (&mainRotor, &tailRotor, altError, yawError, mappedAlt);
             break;
         }
 

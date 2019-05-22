@@ -23,18 +23,8 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define P_GAIN_MAIN     1      // Proportional Gain for main rotor
-#define P_GAIN_MAIN_MUL 1
-#define I_GAIN_MAIN     20000  // Integral Gain for main rotor
-#define D_GAIN_MAIN     1      // Derivative Gain for main rotor
-
-#define P_GAIN_TAIL     4      // Proportional Gain for tail rotor
-#define P_GAIN_TAIL_MUL 3
-#define I_GAIN_TAIL     13333  // Integral Gain for tail rotor
-#define D_GAIN_TAIL     1      // Derivative Gain for tail rotor
-
-#define HOVER_DUTY_MAIN 40     // Hover duty cycle for main
-#define HOVER_DUTY_TAIL 32     // Hover duty cycle for tail
+#define HOVER_DUTY_MAIN 25     // Hover duty cycle for main
+#define ROTATE_DUTY_TAIL 32     // Hover duty cycle for tail
 #define TIME_STEP       1000   // Time step between samples of derivative
 
 //*****************************************************************************
@@ -55,10 +45,10 @@ updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t y
 */
 
 void
-Tailcontroller(rotor_t *tailRotor, int32_t target, int32_t current);
+mainController(rotor_t *mainRotor, int32_t error);
 
 void
-Maincontroller(rotor_t *mainRotor, int32_t target, int32_t current);
+tailController(rotor_t *tailRotor, int32_t error);
 
 //*****************************************************************************
 // Function to integrate yaw and altitude error.
