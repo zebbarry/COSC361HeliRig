@@ -33,17 +33,21 @@ mainController(rotor_t *mainRotor, int32_t error)
 {
     // Scales the values up by a constant so for example 1000 * 0.01 can be 1010 instead of 1 * 0.01 getting 1.01
     // because decimals are inacurate and even small changes from rounding could be a problem
-    int32_t errorIntMax = 10000 * DUTYSCALER;
+    int32_t errorIntMax = 1000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.3;
-    float Ki = 0.5;
-    float Kd = 0.1;
+    int16_t pwmMaxMain = 60;
+    float Kp = 0.2;
+    float Ki = 0.1;
+    float Kd = 0.2;
 
     // Proportional: The error times the proportional coefficent (Kp)
     int32_t P = error * Kp;
 
     // Add the current Error to the error integral
-    altErrorInt += error / DUTYSCALER;
+    if (mainRotor->duty < pwmMaxMain)
+    {
+        altErrorInt += error / DUTYSCALER;
+    }
 
     // Limit the summed error to between i_max and i_min
     if (altErrorInt > errorIntMax) altErrorInt = errorIntMax;
@@ -54,7 +58,7 @@ mainController(rotor_t *mainRotor, int32_t error)
 
     // Derivative: Calculate change in error between now and last time through the controller
     // then multiply by the differential coefficent (Kd)
-    int32_t D = Kd * (altErrorPrev - error);
+    double D = Kd * (altErrorPrev - error);
 
     // Store error to be used to calculate the change next time
     altErrorPrev = error;
@@ -65,7 +69,7 @@ mainController(rotor_t *mainRotor, int32_t error)
     int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
 
     // Limit the duty cycle to between 95 and 5
-    if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
+    if (PWM_Duty > pwmMaxMain) PWM_Duty = pwmMaxMain;
     else if (PWM_Duty < 25) PWM_Duty = 25;
 
     PWMLastMain = PWM_Duty;
@@ -80,9 +84,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 {
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.5;
-    float Ki = 0.1;
-    float Kd = 0.2;
+    float Kp = 0.3;
+    float Ki = 0.06;
+    float Kd = 0.7;
 
     // Proportional
     int32_t P = error * Kp;
@@ -101,7 +105,7 @@ tailController(rotor_t *tailRotor, int32_t error)
     int32_t I = Ki * yawErrorInt;
 
     // Derivative
-    int32_t D = Kd * (yawErrorPrev - error);
+    double D = Kd * (yawErrorPrev - error);
     yawErrorPrev = error;
 
     int32_t PWM_Duty = (P + I + D) / DUTYSCALER;

@@ -77,9 +77,9 @@ SysTickIntHandler(void)
 
     updateButtons();
 
-    /*if (checkButton(RESET) == PUSHED) {
+    if (checkButton(RESET) == PUSHED) {
         SysCtlReset();
-    }*/
+    }
 }
 
 
