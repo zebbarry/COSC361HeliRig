@@ -17,15 +17,9 @@
 #include <stdbool.h>
 #include "motorControl.h"
 
-
-#define DUTYSCALER 1000
-#define PWM_MIN    5
-#define PWM_MAX    70
-
 //********************************************************
 // Global Vars
 //********************************************************
-
 int32_t PWMLastMain = 0;              //"
 int32_t PWMLastTail = 0;              //
 
@@ -71,7 +65,7 @@ mainController(rotor_t *mainRotor, int32_t error)
 
     // Limit the duty cycle to between 95 and 5
     if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
-    else if (PWM_Duty < PWM_MIN) PWM_Duty = PWM_MIN;
+    else if (PWM_Duty < 20) PWM_Duty = 20;
 
     PWMLastMain = PWM_Duty;
 

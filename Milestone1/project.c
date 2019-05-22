@@ -125,12 +125,12 @@ void
 controlDuty(void)
 {
 
-    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_DUTY_MAX_PER)
+    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_MAX)
     {
         mainRotor.duty += PWM_DUTY_STEP_PER;
         setPWM (&mainRotor);
     }
-    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_DUTY_MIN_PER)
+    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_MIN)
     {
         mainRotor.duty -= PWM_DUTY_STEP_PER;
         setPWM (&mainRotor);
@@ -202,8 +202,8 @@ main(void)
             heliState = 4;
 
             desiredYaw = updateDesiredYaw (desiredYaw);
-            //altError = calcAltError(desiredAlt, mappedAlt);
-            //yawError = calcYawError(desiredYaw, yaw);
+            altError = calcAltError(desiredAlt, mappedAlt);
+            yawError = calcYawError(desiredYaw, yaw);
             fly (&mainRotor, &tailRotor, altError, yawError);
         }
 
