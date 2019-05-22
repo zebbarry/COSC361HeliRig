@@ -17,15 +17,9 @@
 #include <stdbool.h>
 #include "motorControl.h"
 
-
-#define DUTYSCALER 1000
-#define PWM_MIN    5
-#define PWM_MAX    70
-
 //********************************************************
 // Global Vars
 //********************************************************
-
 int32_t PWMLastMain = 0;              //"
 int32_t PWMLastTail = 0;              //
 
