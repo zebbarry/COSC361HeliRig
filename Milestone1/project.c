@@ -231,7 +231,8 @@ main(void)
     task_t tasks[] = {
           {.handler = stateMachineTask, .data = &heli, .updateFreq = CONTROLLER_RATE},
           {.handler = updateAltTask, .data = &heli, .updateFreq = ALT_UPDATE_RATE},
-          {.handler = heliInfoOutputTask, .data = &heli, .updateFreq = DISPLAY_RATE}
+          {.handler = heliInfoOutputTask, .data = &heli, .updateFreq = DISPLAY_RATE},
+          {0}
     };
 
     runTasks(tasks);

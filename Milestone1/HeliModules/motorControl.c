@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "motorControl.h"
+#include "yaw.h"
 
 //********************************************************
 // Global Vars
@@ -34,9 +35,9 @@ mainController(rotor_t *mainRotor, int32_t error)
     // because decimals are inacurate and even small changes from rounding could be a problem
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.5;
-    float Ki = 0.1;
-    float Kd = 0.3;
+    float Kp = 0.3;
+    float Ki = 0.5;
+    float Kd = 0.1;
 
     // Proportional: The error times the proportional coefficent (Kp)
     int32_t P = error * Kp;
@@ -65,7 +66,7 @@ mainController(rotor_t *mainRotor, int32_t error)
 
     // Limit the duty cycle to between 95 and 5
     if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
-    else if (PWM_Duty < 20) PWM_Duty = 20;
+    else if (PWM_Duty < 25) PWM_Duty = 25;
 
     PWMLastMain = PWM_Duty;
 
@@ -79,9 +80,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 {
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    float Kp = 0.2;
-    float Ki = 0.2;
-    float Kd = 0.2;
+    float Kp = 0.3;
+    float Ki = 0.5;
+    float Kd = 0.5;
 
     // Proportional
     int32_t P = error * Kp;
@@ -122,7 +123,9 @@ tailController(rotor_t *tailRotor, int32_t error)
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    mainController (mainRotor, altError);
+    if (!debug) {
+        mainController (mainRotor, altError);
+    }
     tailController (tailRotor, yawError);
 }
 
@@ -151,7 +154,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
-    int32_t error = (desiredYaw * DUTYSCALER) - (actualYaw * DUTYSCALER);
+    int32_t error = (desiredYaw * DUTYSCALER) - (YAW_DEG(actualYaw) * DUTYSCALER);
 
     return error;
 }
