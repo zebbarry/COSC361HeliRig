@@ -211,11 +211,17 @@ main(void)
         switch (heliState)
         {
         case LANDED:    // Turn motors off and check for SW change
+            desiredAlt = 0;
             landed (&mainRotor, &tailRotor);
             break;
 
-        case TAKING_OFF:    // Hover and find yaw ref.
+        case TAKING_OFF:    // Hover and find yaw ref
             takeOff (&mainRotor, &tailRotor);
+
+            if (heliState == FLYING)
+            {
+                yawRefIntDisable();
+            }
             break;
 
         case FLYING:    // Fly to desired position and check for SW change
@@ -225,16 +231,24 @@ main(void)
             yawError = calcYawError(desiredYaw, yaw);
             flight (&mainRotor, &tailRotor, altError, yawError);
 
+            if (heliState == LANDING)
+            {
+                desiredYaw = 0;
+            }
             break;
 
         case LANDING:   // Land Heli and change to LANDED once alt < 1%
             if (desiredAlt - DROP_ALT_STEP > 0 && slowTick) {
                 desiredAlt = desiredAlt - DROP_ALT_STEP;
             }
-            desiredYaw = 0;
             altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
+            yawError = calcYawError(desiredYaw, YAW_DEG(yaw));
             land (&mainRotor, &tailRotor, altError, yawError, mappedAlt);
+
+            if (heliState == LANDED)
+            {
+                yawRefIntEnable();
+            }
             break;
         }
 
@@ -243,7 +257,7 @@ main(void)
         if (slowTick && !init_prog)
         {
             slowTick = false;
-            int16_t mappedYaw = mapYaw2Deg(yaw);
+            int16_t mappedYaw = mapYaw2Deg(yaw, false);
             handleHMI (&mainRotor, &tailRotor, mappedAlt, mappedYaw, desiredAlt, desiredYaw);
         }
     }

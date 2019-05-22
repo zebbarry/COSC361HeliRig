@@ -48,13 +48,13 @@ updateDesiredYaw(int32_t desiredYaw)
 {
     if (checkButton(RIGHT) == PUSHED)
     {
-        desiredYaw += (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
+        desiredYaw += YAW_STEP_DEG;
         yawErrorInt = 0;
     }
 
     if (checkButton(LEFT) == PUSHED)
     {
-        desiredYaw -= (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
+        desiredYaw -= YAW_STEP_DEG;
         yawErrorInt = 0;
     }
     return desiredYaw;
@@ -136,7 +136,7 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 
     fly (mainRotor, tailRotor, altError, yawError);
 
-    if (mappedAlt < 1 && abs(yawError) < 1)
+    if (mappedAlt < 1)
     {
         heliState = LANDED;
     }

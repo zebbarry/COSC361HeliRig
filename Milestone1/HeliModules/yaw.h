@@ -25,7 +25,8 @@
 //*****************************************************************************
 #define YAW_TABS 448      // Number of tabs in a full circle.
 #define DEG_CIRC 360      // Number of degrees in full circle.
-#define YAW_DEG(Y)  (2*(Y * DEG_CIRC) + YAW_TABS) / 2 / YAW_TABS
+#define YAW_DEG(Y)  (2* Y * DEG_CIRC + YAW_TABS) / 2 / YAW_TABS
+#define YAW_TAB(Y)  (2 * Y * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC
 
 //---Yaw Pin definitions
 #define YAW_PIN_A               GPIO_PIN_0      // PB0
@@ -43,7 +44,7 @@ enum yawState {BOTH_ZERO = 0, A_ONE, B_ONE, BOTH_ONE};
 // ****************************************************************************
 // Globals to module
 // ****************************************************************************
-volatile int16_t yaw;
+volatile int32_t yaw;
 volatile bool hitYawRef;
 volatile static uint32_t currentState;
 volatile static uint32_t previousState;
@@ -62,9 +63,21 @@ yawIntHandler(void);
 void
 yawRefIntHandler(void);
 
-//*****************************************************************************
+//********************************************************
+// yawRefIntDisable - Disables yawRef interrrupt
+//********************************************************
+void
+yawRefIntDisable(void);
+
+//********************************************************
+// yawRefIntEnable - Enables yawRef interrrupt
+//********************************************************
+void
+yawRefIntEnable(void);
+
+//********************************************************
 // initYaw - Initialise yaw pins
-//*****************************************************************************
+//********************************************************
 void
 initYaw (void);
 
@@ -72,6 +85,6 @@ initYaw (void);
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(int16_t yawVal);
+mapYaw2Deg(int32_t yawVal, bool deg);
 
 #endif /*YAW_H_*/

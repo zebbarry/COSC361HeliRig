@@ -94,6 +94,24 @@ yawRefIntHandler(void)
 }
 
 //********************************************************
+// yawRefIntDisable - Disables yawRef interrrupt
+//********************************************************
+void
+yawRefIntDisable(void)
+{
+    GPIOIntDisable(YAW_PORT_BASE_REF, YAW_PIN_REF);
+}
+
+//********************************************************
+// yawRefIntEnable - Enables yawRef interrrupt
+//********************************************************
+void
+yawRefIntEnable(void)
+{
+    GPIOIntEnable(YAW_PORT_BASE_REF, YAW_PIN_REF);
+}
+
+//********************************************************
 // initYaw - Initialise yaw pins
 //********************************************************
 void
@@ -120,7 +138,7 @@ initYaw (void)
     // Set and register interrupts for Ref Pin
     GPIOIntTypeSet(YAW_PORT_BASE_REF, YAW_PIN_REF, GPIO_RISING_EDGE);
     GPIOIntRegister(YAW_PORT_BASE_REF, yawRefIntHandler);
-    GPIOIntEnable(YAW_PORT_BASE_REF, YAW_PIN_REF);
+    yawRefIntEnable();
 
     // Set initial state.
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
@@ -133,10 +151,12 @@ initYaw (void)
 // mapYaw2Deg - Maps yaw value from raw input to degrees.
 //********************************************************
 int16_t
-mapYaw2Deg(int16_t yawVal)
+mapYaw2Deg(int32_t yawVal, bool deg)
 {
-    int16_t yawDeg = YAW_DEG(yawVal);
-    int16_t scaledYaw = yawDeg % DEG_CIRC;
+    if (!deg) {
+        yawVal = YAW_DEG(yawVal);
+    }
+    int16_t scaledYaw = yawVal % DEG_CIRC;
     int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {
         if (scaledYaw > 0) {

@@ -52,7 +52,7 @@ handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
-    int16_t mappedDesiredYaw = mapYaw2Deg (desiredYaw);
+    int16_t mappedDesiredYaw = mapYaw2Deg (desiredYaw, true);
 
     usnprintf (statusStr, sizeof(statusStr), "YAW: %3d [%3d]\r\n", mappedYaw, mappedDesiredYaw);
     UARTSend (statusStr);

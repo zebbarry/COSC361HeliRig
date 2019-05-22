@@ -159,7 +159,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
-    int16_t error = (desiredYaw * DUTYSCALER) - (actualYaw * DUTYSCALER);
+    int32_t error = (desiredYaw * DUTYSCALER) - (actualYaw * DUTYSCALER);
 
     return error;
 }
