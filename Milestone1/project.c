@@ -42,7 +42,8 @@
 #define BUF_SIZE            100
 #define SAMPLE_RATE_HZ      1000
 #define DISPLAY_RATE        8
-#define CONTROLLER_RATE     300
+#define CONTROLLER_RATE     100
+#define ALT_UPDATE_RATE     100
 
 
 //*****************************************************************************
@@ -50,11 +51,6 @@
 //*****************************************************************************
 circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
-volatile uint8_t slowTick = false;
-rotor_t mainRotor;
-rotor_t tailRotor;
-static int16_t desiredAlt = 0;  // Percentage.
-static int32_t desiredYaw = 0;  // Raw yaw value.
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
@@ -67,16 +63,6 @@ SysTickIntHandler(void)
     //
     ADCProcessorTrigger(ADC0_BASE, 3); 
     g_ulSampCnt++;
-
-    //
-    static uint8_t tickCount = 0;
-    const uint8_t ticksPerSlow = SAMPLE_RATE_HZ / SLOWTICK_RATE_HZ;
-
-    if (++tickCount >= ticksPerSlow)
-    {                       // Signal a slow tick
-        tickCount = 0;
-        slowTick = true;
-    }
 
     updateButtons();
 
@@ -124,39 +110,103 @@ initAltitude (uint16_t altRaw)
     return altRaw - ALT_RANGE;
 }
 
-void
-controlDuty(void)
+static void
+updateAltTask (heli_t *data)
 {
+    heli_t *heli = data;
+    uint16_t altRaw = 0;
+    static uint16_t inADCMax;
 
-    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_MAX)
+    if (g_inBuffer.written)
     {
-        mainRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
-    }
-    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_MIN)
-    {
-        mainRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
+        altRaw = calcMean (&g_inBuffer, BUF_SIZE);
+        heli->mappedAlt = mapAlt(altRaw, inADCMax);
+
+        // If start of program, calibrate ADC input
+        if (heli->initProg)
+        {
+            heli->initProg = false;
+            inADCMax = initAltitude(readCircBuf (&g_inBuffer));
+        }
     }
 }
 
+static void
+heliInfoOutputTask (heli_t *data)
+{
+    heli_t *heli = data;
+    if (!heli->initProg)
+    {
+        heli->mappedYaw = mapYaw2Deg(yaw, false);
+        handleHMI (heli);
+    }
+}
 
+static void
+stateMachineTask (heli_t *data)
+{
+    heli_t *heli = data;
+
+    int32_t yawError;
+    int32_t altError;
+
+    // FSM based on SW1, orientation and altitude.
+    switch (heli->heliState)
+    {
+    case LANDED:    // Turn motors off and check for SW change
+        heli->desiredAlt = 0;
+        heli->heliState = landed (heli->mainRotor, heli->tailRotor);
+        break;
+
+    case TAKING_OFF:    // Hover and find yaw ref
+        heli->heliState = takeOff (heli->mainRotor, heli->tailRotor);
+
+        if (heli->heliState == FLYING)
+        {
+            yawRefIntDisable();
+        }
+        break;
+
+    case FLYING:    // Fly to desired position and check for SW change
+        heli->desiredAlt = updateDesiredAlt (heli->desiredAlt);
+        heli->desiredYaw = updateDesiredYaw (heli->desiredYaw);
+        altError = calcAltError(heli->desiredAlt, heli->mappedAlt);
+        yawError = calcYawError(heli->desiredYaw, yaw);
+        heli->heliState = flight (heli->mainRotor, heli->tailRotor, altError, yawError);
+
+        if (heli->heliState == LANDING)
+        {
+            heli->desiredYaw = 0;
+        }
+        break;
+
+    case LANDING:   // Land Heli and change to LANDED once alt < 1%
+        if (heli->desiredAlt - DROP_ALT_STEP > 0) {
+            heli->desiredAlt = heli->desiredAlt - DROP_ALT_STEP;
+        }
+        altError = calcAltError(heli->desiredAlt, heli->mappedAlt);
+        yawError = calcYawError(heli->desiredYaw, YAW_DEG(yaw));
+        heli->heliState = land (heli->mainRotor, heli->tailRotor, altError, yawError, heli->mappedAlt);
+
+        if (heli->heliState == LANDED)
+        {
+            yawRefIntEnable();
+        }
+        break;
+    }
+}
 
 int
 main(void)
 {
-    uint16_t inADCMax;
-    uint16_t altRaw = 0;
-    int16_t mappedAlt = 0;
-    bool    init_prog = true;
-    int32_t yawError;
-    int32_t altError;
     yawErrorInt = 0;
     altErrorInt = 0;
-    heliState = LANDED;
+    rotor_t mainRotor;
+    rotor_t tailRotor;
 
     initButtons ();
     initClock ();
+    initTimer ();
     initADC ();
     initYaw ();
     initDisplay ();
@@ -164,95 +214,26 @@ main(void)
     initCircBuf (&g_inBuffer, BUF_SIZE);
     initPWMMain (&mainRotor); // Initialise motors with set freq and duty cycle
     initPWMTail (&tailRotor);
-    if (debug) {
-        motorPower (&mainRotor, true);
-        motorPower (&tailRotor, true);
-    }
 
     // Enable interrupts to the processor.
     IntMasterEnable();
+    heli_t heli = {
+       .mainRotor = &mainRotor,
+       .tailRotor = &tailRotor,
+       .initProg = true,
+       .mappedAlt = 0,
+       .mappedYaw = 0,
+       .desiredAlt = 0,
+       .desiredYaw = 0,
+       .heliState = LANDED
+    };
 
-    while (1)
-    {
-        // Background task: calculate the (approximate) mean of the values in the
-        // circular buffer and display it, together with the sample number, as long
-        // as the buffer has been written into.
-        if (g_inBuffer.written)
-        {
-            altRaw = calcMean (&g_inBuffer, BUF_SIZE);
-            mappedAlt = mapAlt(altRaw, inADCMax);
+    task_t tasks[] = {
+          {.handler = stateMachineTask, .data = &heli, .updateFreq = CONTROLLER_RATE},
+          {.handler = updateAltTask, .data = &heli, .updateFreq = ALT_UPDATE_RATE},
+          {.handler = heliInfoOutputTask, .data = &heli, .updateFreq = DISPLAY_RATE}
+    };
 
-            // If start of program, calibrate ADC input
-            if (init_prog)
-            {
-                init_prog = false;
-                inADCMax = initAltitude(readCircBuf (&g_inBuffer));
-            }
-        }
-
-        if (debug) {
-            controlDuty();
-            heliState = 4;
-
-            desiredYaw = updateDesiredYaw (desiredYaw);
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
-            fly (&mainRotor, &tailRotor, altError, yawError);
-        }
-
-        // FSM based on SW1, orientation and altitude.
-        switch (heliState)
-        {
-        case LANDED:    // Turn motors off and check for SW change
-            desiredAlt = 0;
-            landed (&mainRotor, &tailRotor);
-            break;
-
-        case TAKING_OFF:    // Hover and find yaw ref
-            takeOff (&mainRotor, &tailRotor);
-
-            if (heliState == FLYING)
-            {
-                yawRefIntDisable();
-            }
-            break;
-
-        case FLYING:    // Fly to desired position and check for SW change
-            desiredAlt = updateDesiredAlt (desiredAlt);
-            desiredYaw = updateDesiredYaw (desiredYaw);
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
-            flight (&mainRotor, &tailRotor, altError, yawError);
-
-            if (heliState == LANDING)
-            {
-                desiredYaw = 0;
-            }
-            break;
-
-        case LANDING:   // Land Heli and change to LANDED once alt < 1%
-            if (desiredAlt - DROP_ALT_STEP > 0 && slowTick) {
-                desiredAlt = desiredAlt - DROP_ALT_STEP;
-            }
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, YAW_DEG(yaw));
-            land (&mainRotor, &tailRotor, altError, yawError, mappedAlt);
-
-            if (heliState == LANDED)
-            {
-                yawRefIntEnable();
-            }
-            break;
-        }
-
-
-        // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
-        if (slowTick && !init_prog)
-        {
-            slowTick = false;
-            int16_t mappedYaw = mapYaw2Deg(yaw, false);
-            handleHMI (&mainRotor, &tailRotor, mappedAlt, mappedYaw, desiredAlt, desiredYaw);
-        }
-    }
+    runTasks(tasks);
 }
 

@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "stdlib.h"
+#include "limits.h"
 
 #include "inc/hw_memmap.h"  // for TIMER0_BASE etc
 #include "driverlib/sysctl.h"
@@ -28,11 +29,11 @@
 #define TIMER_BASE              WTIMER5_BASE
 #define TIMER_INTERAL           TIMER_A
 #define TIMER_MODE              TIMER_CFG_A_PERIODIC
-#define TIMER_MAX_TICKS         4294967295  // 32 bits for Timer0 A
+#define TIMER_MAX_TICKS         UINT_MAX  // 32 bits for Timer0 A
 #define TIMER_OVERSHOOT_TICKS   (TIMER_MAX_TICKS / 2)
 
 // enable the hardware timer and calculate clock parameters
-void timerInit(void);
+void initTimer(void);
 
 
 // return the current timer value in tick s.

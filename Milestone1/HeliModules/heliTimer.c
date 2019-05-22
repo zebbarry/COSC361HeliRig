@@ -24,7 +24,7 @@ static uint32_t ticksPerMs;
 
 
 // enable the hardware timer and calculate clock parameters
-void timerInit(void)
+void initTimer(void)
 {
     clockRate = SysCtlClockGet();
     ticksPerMs = clockRate / 1000;  // 1000 ms = 1 s

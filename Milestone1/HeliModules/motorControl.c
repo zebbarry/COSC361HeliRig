@@ -122,9 +122,7 @@ tailController(rotor_t *tailRotor, int32_t error)
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    if (!debug) {
-        mainController (mainRotor, altError);
-    }
+    mainController (mainRotor, altError);
     tailController (tailRotor, yawError);
 }
 
