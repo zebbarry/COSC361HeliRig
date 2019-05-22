@@ -2,7 +2,7 @@
 //
 // motorControl.c
 //
-// PI controller module for maintaining helicopter at set
+// PID controller module for maintaining helicopter at set
 // height by changing duty cycle.
 //
 // Author:  Zeb Barry           ID: 79313790
