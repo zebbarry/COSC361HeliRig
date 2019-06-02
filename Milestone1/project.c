@@ -1,17 +1,18 @@
 //*****************************************************************************
 //
-// milestone2.c - Interrupt driven program which samples with AIN9 and
-//              transmits the ADC value through UART0 at 4 Hz, while detecting
-//              pin changes on PB0 and PB1 for quadrature decoding.
+// project.c - Program for controlling a small helicopter through PID control.
+//             Helicopter altitude and yaw is measured using interrupts, with
+//             ADC sampling for altitude and quadratue encoding for yaw. Motor
+//             speeds are controlled using PWM signals output from the board.
+//             Helicopter states and orientation are controlled using a switch
+//             for take off and landing and buttons to control orientation.
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
-// Last modified:   29.4.2019
+// Last modified:   20.5.2019
 //
-//*****************************************************************************
-// Based on the 'convert' series from 2016
 //*****************************************************************************
 
 #include <stdint.h>
@@ -38,20 +39,20 @@
 // Constants
 //*****************************************************************************
 #define BUF_SIZE            100
-#define SAMPLE_RATE_HZ      1000
-#define SLOWTICK_RATE_HZ    8
+#define SAMPLE_RATE_HZ      1000    // SysTickIntHandler frequency
+#define SLOWTICK_RATE_HZ    8       // Slower tick rate used for display and UART
 
 
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
+circBuf_t g_inBuffer;               // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
-volatile uint8_t slowTick = false;
+volatile uint8_t slowTick = false;  // Flag for set lower tick rate SLOWTICK_RATE_HZ
+
+// Global definitions of motors
 rotor_t mainRotor;
 rotor_t tailRotor;
-static int16_t desiredAlt = 0;  // Percentage.
-static int32_t desiredYaw = 0;  // Raw yaw value.
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
@@ -65,7 +66,6 @@ SysTickIntHandler(void)
     ADCProcessorTrigger(ADC0_BASE, 3); 
     g_ulSampCnt++;
 
-    //
     static uint8_t tickCount = 0;
     const uint8_t ticksPerSlow = SAMPLE_RATE_HZ / SLOWTICK_RATE_HZ;
 
@@ -75,8 +75,10 @@ SysTickIntHandler(void)
         slowTick = true;
     }
 
+    // Poll buttons updating states
     updateButtons();
 
+    // If reset button has been pressed, call Reset function
     if (checkButton(RESET) == PUSHED) {
         SysCtlReset();
     }
@@ -113,7 +115,7 @@ initClock (void)
 
 
 //********************************************************
-// initAltitude - Calibrate height by setting limit.
+// initAltitude - Calibrate height by setting max limit.
 //********************************************************
 uint16_t
 initAltitude (uint16_t altRaw)
@@ -121,46 +123,21 @@ initAltitude (uint16_t altRaw)
     return altRaw - ALT_RANGE;
 }
 
-void
-controlDuty(void)
-{
-
-    if (checkButton(UP) == PUSHED && mainRotor.duty < PWM_MAX)
-    {
-        mainRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
-    }
-    if (checkButton(DOWN) == PUSHED && mainRotor.duty > PWM_MIN)
-    {
-        mainRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&mainRotor);
-    }/*
-    if (checkButton(RIGHT) == PUSHED && tailRotor.duty < PWM_DUTY_MAX_PER)
-    {
-        tailRotor.duty += PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
-    }
-    if (checkButton(LEFT) == PUSHED && tailRotor.duty > PWM_DUTY_MIN_PER)
-    {
-        tailRotor.duty -= PWM_DUTY_STEP_PER;
-        setPWM (&tailRotor);
-    }*/
-}
-
-
 
 int
 main(void)
 {
     uint16_t inADCMax;
-    uint16_t altRaw = 0;
-    int16_t mappedAlt = 0;
-    bool    init_prog = true;
-    int32_t yawError;
-    int32_t altError;
+    uint16_t altRaw     = 0;
+    int16_t  mappedAlt  = 0;
+    bool     init_prog  = true;
+    int32_t  yawError   = 0;
+    int32_t  altError   = 0;
+    int16_t  desiredAlt = 0;  // Percentage.
+    int32_t  desiredYaw = 0;  // Raw yaw value.
     yawErrorInt = 0;
     altErrorInt = 0;
-    heliState = LANDED;
+    heliState   = LANDED;
 
     initButtons ();
     initClock ();
@@ -171,10 +148,6 @@ main(void)
     initCircBuf (&g_inBuffer, BUF_SIZE);
     initPWMMain (&mainRotor); // Initialise motors with set freq and duty cycle
     initPWMTail (&tailRotor);
-    if (debug) {
-        motorPower (&mainRotor, true);
-        motorPower (&tailRotor, true);
-    }
 
     // Enable interrupts to the processor.
     IntMasterEnable();
@@ -197,25 +170,22 @@ main(void)
             }
         }
 
-        if (debug) {
-            controlDuty();
-            heliState = 4;
-
-            desiredYaw = updateDesiredYaw (desiredYaw);
-            altError = calcAltError(desiredAlt, mappedAlt);
-            yawError = calcYawError(desiredYaw, yaw);
-            fly (&mainRotor, &tailRotor, altError, yawError);
-        }
-
-        // FSM based on SW1, orientation and altitude.
+        // FSM for different helicopter states.
+        // Uses switch inputs, orientation and elevation to control
+        // helicopter state.
         switch (heliState)
         {
-        case LANDED:    // Turn motors off and check for SW change
+        // LANDED - Turn motors off, check for upwards SW change to
+        //          move to TAKING_OFF
+        case LANDED:
             desiredAlt = 0;
             landed (&mainRotor, &tailRotor);
             break;
 
-        case TAKING_OFF:    // Hover and find yaw ref
+        // TAKING_OFF - Turn on motors and rotate until yaw reference
+        //              point found then switch to FLYING. Disable yawRefInt
+        //              once state changes.
+        case TAKING_OFF:
             takeOff (&mainRotor, &tailRotor);
 
             if (heliState == FLYING)
@@ -224,7 +194,10 @@ main(void)
             }
             break;
 
-        case FLYING:    // Fly to desired position and check for SW change
+        // FLYING - Control heli height and yaw using PID control,
+        //          adjusting desired position based on button inputs.
+        //          Change to LANDING when SW move to down.
+        case FLYING:    //
             desiredAlt = updateDesiredAlt (desiredAlt);
             desiredYaw = updateDesiredYaw (desiredYaw);
             altError = calcAltError(desiredAlt, mappedAlt);
@@ -237,7 +210,10 @@ main(void)
             }
             break;
 
-        case LANDING:   // Land Heli and change to LANDED once alt < 1%
+        // LANDING - Reduce desired height by DROP_ALT_STEP at 8Hz,
+        //           maintaining desired yaw of 0.
+        //           Move to LANDED once altitude is within 2%.
+        case LANDING:
             if (desiredAlt - DROP_ALT_STEP > 0 && slowTick)
             {
                 desiredAlt = desiredAlt - DROP_ALT_STEP;
@@ -245,6 +221,7 @@ main(void)
             {
                 desiredAlt = 0;
             }
+
             altError = calcAltError(desiredAlt, mappedAlt);
             yawError = calcYawError(desiredYaw, YAW_DEG(yaw));
             land (&mainRotor, &tailRotor, altError, yawError, mappedAlt);
@@ -255,7 +232,6 @@ main(void)
             }
             break;
         }
-
 
         // Time to send a message through UART at set lower frequency SLOW_TICK_RATE_HZ
         if (slowTick && !init_prog)
