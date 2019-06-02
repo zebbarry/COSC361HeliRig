@@ -64,7 +64,7 @@ updateDesiredYaw(int32_t desiredYaw)
 //********************************************************
 // landed - Resets motors to off and checks switch
 //********************************************************
-enum state
+void
 landed (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (mainRotor->state || tailRotor->state)
@@ -75,16 +75,14 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
 
     if (checkButton(SW) == PUSHED)
     {
-        return TAKING_OFF;
-    } else {
-        return LANDED;
+        heliState = TAKING_OFF;
     }
 }
 
 //********************************************************
 // takeOff - Orientates helicopter to yawRef
 //********************************************************
-enum state
+void
 takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
@@ -100,16 +98,14 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
     if (hitYawRef)
     {
         hitYawRef = false;
-        return FLYING;
-    } else {
-        return TAKING_OFF;
+        heliState = FLYING;
     }
 }
 
 //********************************************************
 // flight - Flys helicopter checking for switch.
 //********************************************************
-enum state
+void
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
     if (!mainRotor->state || !tailRotor->state)
@@ -122,16 +118,14 @@ flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawErr
 
     if (checkButton(SW) == RELEASED)
     {
-        return LANDING;
-    } else {
-        return FLYING;
+        heliState = LANDING;
     }
 }
 
 //********************************************************
 // land - Lands helicopter at reference angle.
 //********************************************************
-enum state
+void
 land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError, int16_t mappedAlt)
 {
     if (!mainRotor->state || !tailRotor->state)
@@ -144,7 +138,6 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 
     if (mappedAlt < 1)
     {
-        return LANDED;
-    } else
-        return LANDING;
+        heliState = LANDED;
+    }
 }

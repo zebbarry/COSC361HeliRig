@@ -32,17 +32,6 @@
 //********************************************************
 enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
 enum state heliState;
-typedef struct heli_struct
-{
-    rotor_t *mainRotor;
-    rotor_t *tailRotor;
-    bool    initProg;
-    int32_t mappedAlt;
-    int32_t mappedYaw;
-    int16_t desiredAlt;
-    int32_t desiredYaw;
-    enum state heliState;
-} heli_t;
 
 //********************************************************
 // updateDesiredAlt - Updates desired altitude value
@@ -59,25 +48,25 @@ updateDesiredYaw(int32_t desiredYaw);
 //********************************************************
 // landed - Resets motors to off and checks switch
 //********************************************************
-enum state
+void
 landed (rotor_t *mainRotor, rotor_t *tailRotor);
 
 //********************************************************
 // takeOff - Orientates helicopter to yawRef
 //********************************************************
-enum state
+void
 takeOff (rotor_t *mainRotor, rotor_t *tailRotor);
 
 //********************************************************
 // flight - Flys helicopter checking for switch.
 //********************************************************
-enum state
+void
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
 
 //********************************************************
 // land - Lands helicopter at reference angle.
 //********************************************************
-enum state
+void
 land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError, int16_t mappedAlt);
 
 #endif /* STATEMACHINE_H_ */

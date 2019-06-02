@@ -26,41 +26,40 @@
 // handleHMI - Handle output to UART port and display.
 //********************************************************
 void
-handleHMI (heli_t *heli)
+handleHMI (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
+           int16_t desiredAlt, int32_t desiredYaw)
 {
     // Output data to UART
-    handleUART (heli);
+    handleUART (main, tail, mappedAlt, mappedYaw, desiredAlt, desiredYaw);
 
     // Update OLED display with ADC, yaw value, duty cycles and state.
-    displayMeanVal (heli->mappedAlt, heli->desiredAlt);
-    displayYaw (heli->mappedYaw, heli->desiredYaw);
-    displayPWM (heli->mainRotor, heli->tailRotor);
-    displayState (heli->heliState);
+    displayMeanVal (mappedAlt, desiredAlt);
+    displayYaw (mappedYaw, desiredYaw);
+    displayPWM (main, tail);
+    displayState (heliState);
 }
 
 //********************************************************
 // handleUART - Handle output to UART port
 //********************************************************
 void
-handleUART (heli_t *heli)
+handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
+           int16_t desiredAlt, int32_t desiredYaw)
 {
     char statusStr[MAX_STR_LEN + 1];
     // Form and send a status message for altitude to the console
-    usnprintf (statusStr, sizeof(statusStr), "ALT: %3d [%3d]\r\n",
-               heli->mappedAlt, heli->desiredAlt);
+    usnprintf (statusStr, sizeof(statusStr), "ALT: %3d [%3d]\r\n", mappedAlt, desiredAlt);
     UARTSend (statusStr);
 
     // Form and send a status message for yaw to the console
-    int16_t mappedDesiredYaw = mapYaw2Deg (heli->desiredYaw, true);
+    int16_t mappedDesiredYaw = mapYaw2Deg (desiredYaw, true);
 
-    usnprintf (statusStr, sizeof(statusStr), "YAW: %3d [%3d]\r\n",
-               heli->mappedYaw, mappedDesiredYaw);
+    usnprintf (statusStr, sizeof(statusStr), "YAW: %3d [%3d]\r\n", mappedYaw, mappedDesiredYaw);
     UARTSend (statusStr);
 
-    if (heli->mainRotor->state && heli->tailRotor->state)
+    if (main->state && tail->state)
     {
-        usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n",
-                   heli->mainRotor->duty, heli->tailRotor->duty);
+        usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", main->duty, tail->duty);
     } else {
         usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n", 0, 0);
     }
