@@ -67,7 +67,7 @@ handleUART (heli_t *heli)
     UARTSend (statusStr);
 
     // Send status message about helicopter state
-    char* state[] = {"LANDED", "TAKING_OFF", "FLYING", "LANDING", "ERROR"};
+    char *state[] = {"LANDED", "TAKE OFF", "FLYING", "LANDING", "ERROR"};
 
     // Leave enough space for the template, state and null terminator.
     usnprintf (statusStr, sizeof(statusStr), "HELI: %s\r\n\n", state[heliState]);

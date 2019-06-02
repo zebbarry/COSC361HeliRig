@@ -25,7 +25,7 @@
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-const uint16_t outADC_min = 0;
+const uint16_t outADC_min = 0;      // Mapping values to restrict the alt to 0-100%
 const uint16_t outADC_max = 100;
 
 //*****************************************************************************
@@ -103,7 +103,7 @@ displayPWM(rotor_t *main, rotor_t *tail)
         usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", 0, 0);
     }
 
-    // Update line on display, first line.
+    // Update line on display, third line.
     OLEDStringDraw (string, 0, 2);
 
 }
@@ -119,6 +119,6 @@ displayState(enum state heliState)
 
     usnprintf (string, sizeof(string), "Heli State: %s", state[heliState]);
 
-    // Update line on display, first line.
+    // Update line on display, fourth line.
     OLEDStringDraw (string, 0, 3);
 }

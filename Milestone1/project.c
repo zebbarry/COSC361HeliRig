@@ -1,17 +1,18 @@
 //*****************************************************************************
 //
-// milestone2.c - Interrupt driven program which samples with AIN9 and
-//              transmits the ADC value through UART0 at 4 Hz, while detecting
-//              pin changes on PB0 and PB1 for quadrature decoding.
+// project.c - Program for controlling a small helicopter through PID control.
+//             Helicopter altitude and yaw is measured using interrupts, with
+//             ADC sampling for altitude and quadratue encoding for yaw. Motor
+//             speeds are controlled using PWM signals output from the board.
+//             Helicopter states and orientation are controlled using a switch
+//             for take off and landing and buttons to control orientation.
 //
 // Author:  Zeb Barry           ID: 79313790
 // Author:  Mitchell Hollows    ID: 23567059
 // Author:  Jack Topliss        ID: 46510499
 // Group:   Thu am 22
-// Last modified:   29.4.2019
+// Last modified:   20.5.2019
 //
-//*****************************************************************************
-// Based on the 'convert' series from 2016
 //*****************************************************************************
 
 #include <stdint.h>
@@ -49,7 +50,7 @@
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
+circBuf_t g_inBuffer;               // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
 
 //*****************************************************************************
@@ -66,9 +67,10 @@ SysTickIntHandler(void)
 
     updateButtons();
 
-    /*if (checkButton(RESET) == PUSHED) {
+    // If reset button has been pressed, call Reset function
+    if (checkButton(RESET) == PUSHED) {
         SysCtlReset();
-    }*/
+    }
 }
 
 
@@ -102,7 +104,7 @@ initClock (void)
 
 
 //********************************************************
-// initAltitude - Calibrate height by setting limit.
+// initAltitude - Calibrate height by setting max limit.
 //********************************************************
 uint16_t
 initAltitude (uint16_t altRaw)

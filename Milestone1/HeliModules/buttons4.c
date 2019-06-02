@@ -2,16 +2,17 @@
 // 
 // buttons4.c
 //
-// Support for a set of FOUR specific buttons on the Tiva/Orbit.
+// Support for a set of SIX specific buttons on the Tiva/Orbit.
 // ENCE361 sample code.
 // The buttons are:  UP and DOWN (on the Orbit daughterboard) plus
-// LEFT and RIGHT on the Tiva.
+// LEFT and RIGHT on the Tiva. They also include a SW on the Orbit
+// board and a Soft Reset button on a input pin.
 //
 // Note that pin PF0 (the pin for the RIGHT pushbutton - SW2 on
 //  the Tiva board) needs special treatment - See PhilsNotesOnTiva.rtf.
 //
 // P.J. Bones UCECE
-// Last modified:  7.2.2018
+// Last modified:  2.5.2019
 // 
 // *******************************************************
 
@@ -74,14 +75,14 @@ initButtons (void)
        GPIO_PIN_TYPE_STD_WPU);
     but_normal[RIGHT] = RIGHT_BUT_NORMAL;
 
-    // STATE SWITCH
+    // STATE SWITCH (active HIGH)
     SysCtlPeripheralEnable (SW_PERIPH);
     GPIOPinTypeGPIOInput (SW_PORT_BASE, SW_PIN);
     GPIOPadConfigSet (SW_PORT_BASE, SW_PIN, GPIO_STRENGTH_2MA,
                       GPIO_PIN_TYPE_STD_WPD);
     but_normal[SW] = SW_BUT_NORMAL;
 
-    // RESET SWITCH
+    // RESET SWITCH (active LOW)
     SysCtlPeripheralEnable (RESET_PERIPH);
     GPIOPinTypeGPIOInput (RESET_PORT_BASE, RESET_PIN);
     GPIOPadConfigSet (RESET_PORT_BASE, RESET_PIN, GPIO_STRENGTH_2MA,

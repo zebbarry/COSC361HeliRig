@@ -32,8 +32,6 @@
 void
 initPWMMain (rotor_t *rotor)
 {
-    uint32_t ui32Period;
-
     SysCtlPeripheralEnable(PWM_MAIN_PERIPH_PWM);
     SysCtlPeripheralEnable(PWM_MAIN_PERIPH_GPIO);
 
@@ -63,8 +61,6 @@ initPWMMain (rotor_t *rotor)
 void
 initPWMTail (rotor_t *rotor)
 {
-    uint32_t ui32Period;
-
     SysCtlPeripheralEnable(PWM_TAIL_PERIPH_PWM);
     SysCtlPeripheralEnable(PWM_TAIL_PERIPH_GPIO);
 
