@@ -32,7 +32,7 @@ typedef struct {
 // sure baseFreq is greater than or equal to all task frequencies otherwise the tasks will
 // not be run at the correct rate. A pointer to a state object stores entries applicable to
 // many tasks.
-void runTasks(task_t* tasks);
+void runTasks(task_t* tasks, uint32_t baseFreq);
 
 
 #endif /* KERNEL_H_ */

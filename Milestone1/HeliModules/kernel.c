@@ -18,23 +18,14 @@
 // sure baseFreq is greater than or equal to all task frequencies otherwise the tasks will
 // not be run at the correct rate. A pointer to a state object stores entries applicable to
 // many tasks.
-void runTasks(task_t* tasks)
+void runTasks(task_t* tasks, uint32_t baseFreq)
 {
-    uint16_t i = 0;
-    uint32_t baseFreq = tasks[0].updateFreq;
-    while (tasks[++i].handler)
-    {
-        if (tasks[i].updateFreq > baseFreq)
-        {
-            baseFreq = tasks[i].updateFreq;
-        }
-    }
     // initalise the value to count up to for each task so that
     // tasks can run at different frequencies
     int32_t deltaTime = 1000 / baseFreq;  // in milliseconds, hence the 1000 factor
 
     // loop until empty terminator task
-    i = 0;
+    uint16_t i = 0;
     while (tasks[i].handler) {
         uint32_t triggerCount = baseFreq / tasks[i].updateFreq;
 

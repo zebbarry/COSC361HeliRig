@@ -45,6 +45,7 @@
 #define DISPLAY_RATE        8
 #define CONTROLLER_RATE     100
 #define ALT_UPDATE_RATE     100
+#define BASE_FREQ           250
 
 
 //*****************************************************************************
@@ -268,6 +269,6 @@ main(void)
     };
 
     // Run scheduler
-    runTasks(tasks);
+    runTasks(tasks, BASE_FREQ);
 }
 
