@@ -113,6 +113,7 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
     // If yaw reference flag is true, change state
     if (hitYawRef)
     {
+        yawRefIntDisable();
         hitYawRef = false;
         return FLYING;
     } else {
@@ -164,6 +165,7 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
     // If altitude falls to below 2%, change to landed state
     if (mappedAlt < 2)
     {
+        yawRefIntEnable();
         return LANDED;
     } else
         return LANDING;

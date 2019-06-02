@@ -185,12 +185,6 @@ stateMachineTask (heli_t *data)
     //              once state changes.
     case TAKING_OFF:    // Hover and find yaw ref
         heli->heliState = takeOff (heli->mainRotor, heli->tailRotor);
-
-        if (heli->heliState == FLYING)
-        {
-            yawRefIntDisable();
-            hitYawRef = 0;
-        }
         break;
 
     // FLYING - Control heli height and yaw using PID control,
@@ -219,11 +213,6 @@ stateMachineTask (heli_t *data)
         altError = calcAltError(heli->desiredAlt, heli->mappedAlt);
         yawError = calcYawError(heli->desiredYaw, YAW_DEG(yaw));
         heli->heliState = land (heli->mainRotor, heli->tailRotor, altError, yawError, heli->mappedAlt);
-
-        if (heli->heliState == LANDED)
-        {
-            yawRefIntEnable();
-        }
         break;
     }
 }
