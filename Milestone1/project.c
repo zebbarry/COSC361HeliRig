@@ -124,6 +124,7 @@ updateAltTask (heli_t *data)
     uint16_t altRaw = 0;
     static uint16_t inADCMax;
 
+    // If values have been written to the buffer, then calculate the average
     if (g_inBuffer.written)
     {
         altRaw = calcMean (&g_inBuffer, BUF_SIZE);
@@ -148,6 +149,7 @@ heliInfoOutputTask (heli_t *data)
     heli_t *heli = data;
     if (!heli->initProg)
     {
+        // Heli mappped yaw definition so that display of value is immune to interrupt changes
         heli->mappedYaw = mapYaw2Deg(yaw, false);
         handleHMI (heli);
     }
