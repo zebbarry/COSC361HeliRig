@@ -52,12 +52,14 @@
 //*****************************************************************************
 circBuf_t g_inBuffer;               // Buffer of size BUF_SIZE integers (sample values)
 static uint32_t g_ulSampCnt;        // Counter for the interrupts
+rotor_t mainRotor;
+rotor_t tailRotor;
 
 //*****************************************************************************
 // The interrupt handler for the for SysTick interrupt.
 //*****************************************************************************
 void
-SysTickIntHandler(void)
+sysTickIntHandler(void)
 {
     //
     // Initiate a conversion
@@ -92,7 +94,7 @@ initClock (void)
     SysTickPeriodSet(SysCtlClockGet() / SAMPLE_RATE_HZ);
     //
     // Register the interrupt handler
-    SysTickIntRegister(SysTickIntHandler);
+    SysTickIntRegister(sysTickIntHandler);
 
     // Set the PWM clock rate (using the prescaler)
     SysCtlPWMClockSet(PWM_DIVIDER_CODE);
@@ -184,6 +186,7 @@ stateMachineTask (heli_t *data)
         if (heli->heliState == FLYING)
         {
             yawRefIntDisable();
+            hitYawRef = 0;
         }
         break;
 
@@ -227,8 +230,6 @@ main(void)
 {
     yawErrorInt = 0;
     altErrorInt = 0;
-    rotor_t mainRotor;
-    rotor_t tailRotor;
 
     initButtons ();
     initClock ();
@@ -243,6 +244,8 @@ main(void)
 
     // Enable interrupts to the processor.
     IntMasterEnable();
+
+    // Set initial values for helicopter
     heli_t heli = {
        .mainRotor = &mainRotor,
        .tailRotor = &tailRotor,
@@ -254,13 +257,15 @@ main(void)
        .heliState = LANDED
     };
 
+    // Define tasks for the scheduler and their frequencies
     task_t tasks[] = {
           {.handler = stateMachineTask, .data = &heli, .updateFreq = CONTROLLER_RATE},
           {.handler = updateAltTask, .data = &heli, .updateFreq = ALT_UPDATE_RATE},
           {.handler = heliInfoOutputTask, .data = &heli, .updateFreq = DISPLAY_RATE},
-          {0}
+          {0}   // Null terminator
     };
 
+    // Run scheduler
     runTasks(tasks);
 }
 
