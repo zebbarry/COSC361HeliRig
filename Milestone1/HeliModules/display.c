@@ -25,7 +25,7 @@
 //*****************************************************************************
 // Global variables
 //*****************************************************************************
-const uint16_t outADC_min = 0;
+const uint16_t outADC_min = 0;      // Mapping values to restrict the alt to 0-100%
 const uint16_t outADC_max = 100;
 
 //*****************************************************************************
@@ -77,11 +77,11 @@ displayMeanVal(int16_t mappedAlt, uint16_t desiredAlt)
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t mappedYaw, int16_t desiredYaw)
+displayYaw(int16_t mappedYaw, int32_t desiredYaw)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
 
-    usnprintf (string, sizeof(string), "YAW:%4d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw));
+    usnprintf (string, sizeof(string), "YAW:%4d [%3d]\n", mappedYaw, mapYaw2Deg(desiredYaw, true));
 
     // Update line on display, first line.
     OLEDStringDraw (string, 0, 0);
@@ -103,7 +103,7 @@ displayPWM(rotor_t *main, rotor_t *tail)
         usnprintf (string, sizeof(string), "MAIN %2d TAIL %2d", 0, 0);
     }
 
-    // Update line on display, first line.
+    // Update line on display, third line.
     OLEDStringDraw (string, 0, 2);
 
 }
@@ -115,27 +115,10 @@ void
 displayState(enum state heliState)
 {
     char string[MAX_DISP_LEN + 1];  // 16 characters across the display
-    char* state;
+    char* state[] = {"LD", "TF", "FL", "LG", "ER"};
 
-    if (heliState == LANDED)
-    {
-        state = "LD";
-    } else if (heliState == TAKING_OFF)
-    {
-        state = "TF";
-    } else if (heliState == FLYING)
-    {
-        state = "FL";
-    } else if (heliState == LANDING)
-    {
-        state = "LG";
-    } else
-    {
-        state = "ER";
-    }
+    usnprintf (string, sizeof(string), "Heli State: %s", state[heliState]);
 
-    usnprintf (string, sizeof(string), "Heli State: %s", state);
-
-    // Update line on display, first line.
+    // Update line on display, fourth line.
     OLEDStringDraw (string, 0, 3);
 }

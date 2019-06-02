@@ -24,7 +24,6 @@
 // Globals to module
 // ****************************************************************************
 extern circBuf_t g_inBuffer;        // Buffer of size BUF_SIZE integers (sample values)
-#define HELI_CHANNEL ADC_CTL_CH9    // Analogue channel input.
 
 //*****************************************************************************
 // The handler for the ADC conversion complete interrupt.

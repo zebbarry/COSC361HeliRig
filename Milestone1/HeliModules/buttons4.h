@@ -4,13 +4,14 @@
 // *******************************************************
 // buttons4.h
 //
-// Support for a set of FOUR specific buttons on the Tiva/Orbit.
+// Support for a set of SIX specific buttons on the Tiva/Orbit.
 // ENCE361 sample code.
 // The buttons are:  UP and DOWN (on the Orbit daughterboard) plus
-// LEFT and RIGHT on the Tiva.
+// LEFT and RIGHT on the Tiva. They also include a SW on the Orbit
+// board and a Soft Reset button on a input pin.
 //
 // P.J. Bones UCECE
-// Last modified:  7.2.2018
+// Last modified:  2.5.2019
 // 
 // *******************************************************
 

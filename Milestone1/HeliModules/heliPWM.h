@@ -24,7 +24,7 @@
  * Constants
  **********************************************************/
 // PWM Configuration
-#define PWM_MAIN_FREQ_HZ   200
+#define PWM_MAIN_FREQ_HZ   250
 #define PWM_TAIL_FREQ_HZ   200
 #define PWM_START_DUTY_PER 5
 #define PWM_DUTY_STEP_PER  2

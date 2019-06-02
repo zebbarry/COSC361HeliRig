@@ -29,14 +29,12 @@
 // handleHMI - Handle output to UART port and display.
 //********************************************************
 void
-handleHMI (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
-           int16_t desiredAlt, int32_t desiredYaw);
+handleHMI (heli_t *heli);
 
 //********************************************************
 // handleUART - Handle output to UART port
 //********************************************************
 void
-handleUART (rotor_t *main, rotor_t *tail, uint16_t mappedAlt, int16_t mappedYaw,
-           int16_t desiredAlt, int32_t desiredYaw);
+handleUART (heli_t *heli);
 
 #endif /* HELIHMI_H_ */

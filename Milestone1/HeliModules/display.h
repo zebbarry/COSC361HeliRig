@@ -54,7 +54,7 @@ displayMeanVal(int16_t mappedAlt, uint16_t desiredAlt);
 // Function to display the yaw value in degrees to display
 //*****************************************************************************
 void
-displayYaw(int16_t mappedYaw, int16_t desiredYaw);
+displayYaw(int16_t mappedYaw, int32_t desiredYaw);
 
 //*****************************************************************************
 // Function to display the PWM for main and tail rotors.

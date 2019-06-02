@@ -2,7 +2,7 @@
 //
 // motorControl.c
 //
-// PI controller module for maintaining helicopter at set
+// PID controller module for maintaining helicopter at set
 // height by changing duty cycle.
 //
 // Author:  Zeb Barry           ID: 79313790
@@ -16,60 +16,121 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "motorControl.h"
+#include "yaw.h"
+
+//********************************************************
+// Global Vars
+//********************************************************
+int32_t PWMLastMain = 0;              //"
+int32_t PWMLastTail = 0;              //
 
 //*****************************************************************************
 // Function to update motor duty cycles to reduce error values to zero.
 //*****************************************************************************
+// PID controller for the main motor
 void
-updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
+mainController(rotor_t *mainRotor, int32_t error)
 {
-    int32_t newMainDuty;
-    int32_t newTailDuty;
-    // Calculate derivative error
-    int32_t altErrorDer = (altError - altErrorPrev);
-    int32_t yawErrorDer = (yawError - yawErrorPrev);
+    // Scales the values up by a constant so for example 1000 * 0.01 can be 1010 instead of 1 * 0.01 getting 1.01
+    // because decimals are inacurate and even small changes from rounding could be a problem
+    int32_t errorIntMax = 1000 * DUTYSCALER;
+    int32_t errorIntMin = 0;
+    int16_t pwmMaxMain = 60;
+    float Kp = 0.2;
+    float Ki = 0.1;
+    float Kd = 0.2;
 
-    altErrorPrev = altError;
-    yawErrorPrev = yawError;
+    // Proportional: The error times the proportional coefficent (Kp)
+    int32_t P = error * Kp;
 
-    newMainDuty = HOVER_DUTY_MAIN + (2*altError*P_GAIN_MAIN_MUL + P_GAIN_MAIN) / 2 / P_GAIN_MAIN;   // Proportional
-    newMainDuty += (2*altErrorInt + I_GAIN_MAIN) / 2 / I_GAIN_MAIN;                         // Integral
-    //newMainDuty += (2*altErrorDer + D_GAIN_MAIN) / 2 / D_GAIN_MAIN;                       // Derivative
-
-    newTailDuty = HOVER_DUTY_TAIL + (2*yawError*P_GAIN_TAIL_MUL + P_GAIN_TAIL) / 2 / P_GAIN_TAIL;   // Proportional
-    newTailDuty += (2*yawErrorInt + I_GAIN_TAIL) / 2 / I_GAIN_TAIL;                         // Integral
-    //newTailDuty += (2*yawErrorDer + D_GAIN_TAIL) / 2 / D_GAIN_TAIL;                       // Derivative
-
-    // Check duty cycles are within range
-    if (newMainDuty > PWM_DUTY_MAX_PER)
+    // Add the current Error to the error integral
+    if (mainRotor->duty < pwmMaxMain)
     {
-        newMainDuty = PWM_DUTY_MAX_PER;
-    }
-    else if (newMainDuty < PWM_DUTY_MIN_MAIN_PER)
-    {
-        newMainDuty = PWM_DUTY_MIN_MAIN_PER;
-    } else {
-        altErrorInt += altError;
+        altErrorInt += error / DUTYSCALER;
     }
 
-    if (newTailDuty > PWM_DUTY_MAX_PER)
+    // Limit the summed error to between i_max and i_min
+    if (altErrorInt > errorIntMax) altErrorInt = errorIntMax;
+    else if (altErrorInt < errorIntMin) altErrorInt = errorIntMin;
+
+    // Integral: Multiply the sum by the integral coefficent (Ki)
+    int32_t I = Ki * altErrorInt;
+
+    // Derivative: Calculate change in error between now and last time through the controller
+    // then multiply by the differential coefficent (Kd)
+    double D = Kd * (altErrorPrev - error);
+
+    // Store error to be used to calculate the change next time
+    altErrorPrev = error;
+
+    // Combine the proportional, integral and derivative components and then scales back down.
+    //      (looking at it again im not sure why this isn't just "P + I + D" as the previous
+    //      duty cycle shouldn't matter, I'll test changing this)
+    int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
+
+    // Limit the duty cycle to between 95 and 5
+    if (PWM_Duty > pwmMaxMain) PWM_Duty = pwmMaxMain;
+    else if (PWM_Duty < 25) PWM_Duty = 25;
+
+    PWMLastMain = PWM_Duty;
+
+    mainRotor->duty = PWM_Duty;
+    setPWM(mainRotor);
+}
+
+// PID controller for the tail motor [ See above for comments ]
+void
+tailController(rotor_t *tailRotor, int32_t error)
+{
+    int32_t errorIntMax = 10000 * DUTYSCALER;
+    int32_t errorIntMin = 0;
+    float Kp = 0.5;
+    float Ki = 0.09;
+    float Kd = 0.1;
+
+    // Proportional
+    int32_t P = error * Kp;
+
+    // Integral
+    if (tailRotor->duty < PWM_MAX && tailRotor->duty > PWM_MIN)
     {
-        newTailDuty = PWM_DUTY_MAX_PER;
-    }
-    else if (newTailDuty < PWM_DUTY_MIN_PER)
-    {
-        newTailDuty = PWM_DUTY_MIN_PER;
-    } else {
-        yawErrorInt += yawError;
+        yawErrorInt += error / DUTYSCALER;
     }
 
-    // Set new duty cycles
-    if (!debug) {
-        mainRotor->duty = newMainDuty;
-        setPWM(mainRotor);
-    }
-    tailRotor->duty = newTailDuty;
+    // Limit sum
+    if (yawErrorInt > errorIntMax) yawErrorInt = errorIntMax;
+    else if (yawErrorInt < errorIntMin) yawErrorInt = errorIntMin;
+
+    // Integral
+    int32_t I = Ki * yawErrorInt;
+
+    // Derivative
+    double D = Kd * (yawErrorPrev - error);
+    yawErrorPrev = error;
+
+    int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
+
+    // Limit PWM to specification
+    if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
+    else if (PWM_Duty < PWM_MIN) PWM_Duty = PWM_MIN;
+
+    PWMLastTail = PWM_Duty;
+
+    tailRotor->duty = PWM_Duty;
     setPWM(tailRotor);
+}
+
+
+//********************************************************
+// fly - Controls heli to desired position and angle
+//********************************************************
+void
+fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
+{
+    if (!debug) {
+        mainController (mainRotor, altError);
+    }
+    tailController (tailRotor, yawError);
 }
 
 //*****************************************************************************
@@ -88,7 +149,7 @@ integrate(int32_t altError, int32_t yawError)
 int32_t
 calcAltError(int32_t desiredAlt, int32_t actualAlt)
 {
-    return desiredAlt - actualAlt;
+    return (desiredAlt * DUTYSCALER) - (actualAlt * DUTYSCALER);
 }
 
 //*****************************************************************************
@@ -97,16 +158,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
-    int16_t error = desiredYaw - actualYaw;
+    int32_t error = (desiredYaw * DUTYSCALER) - (YAW_DEG(actualYaw) * DUTYSCALER);
 
     return error;
-}
-
-//********************************************************
-// fly - Controls heli to desired position and angle
-//********************************************************
-void
-fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
-{
-    updateMotors (mainRotor, tailRotor, altError, yawError);
 }

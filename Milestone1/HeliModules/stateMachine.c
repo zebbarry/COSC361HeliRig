@@ -48,13 +48,13 @@ updateDesiredYaw(int32_t desiredYaw)
 {
     if (checkButton(RIGHT) == PUSHED)
     {
-        desiredYaw += (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
+        desiredYaw += YAW_STEP_DEG;
         yawErrorInt = 0;
     }
 
     if (checkButton(LEFT) == PUSHED)
     {
-        desiredYaw -= (2 * YAW_STEP_DEG * YAW_TABS + DEG_CIRC) / 2 / DEG_CIRC;
+        desiredYaw -= YAW_STEP_DEG;
         yawErrorInt = 0;
     }
     return desiredYaw;
@@ -64,29 +64,27 @@ updateDesiredYaw(int32_t desiredYaw)
 //********************************************************
 // landed - Resets motors to off and checks switch
 //********************************************************
-void
+enum state
 landed (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (mainRotor->state || tailRotor->state)
     {
         motorPower (mainRotor, false);
         motorPower (tailRotor, false);
-        mainRotor->duty = HOVER_DUTY_MAIN;
-        tailRotor->duty = HOVER_DUTY_TAIL;
-        setPWM (mainRotor);
-        setPWM (tailRotor);
     }
 
     if (checkButton(SW) == PUSHED)
     {
-        heliState = TAKING_OFF;
+        return TAKING_OFF;
+    } else {
+        return LANDED;
     }
 }
 
 //********************************************************
 // takeOff - Orientates helicopter to yawRef
 //********************************************************
-void
+enum state
 takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
     if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
@@ -101,18 +99,17 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 
     if (hitYawRef)
     {
-        tailRotor->duty = HOVER_DUTY_TAIL;
-        setPWM (tailRotor);
         hitYawRef = false;
-
-        heliState = FLYING;
+        return FLYING;
+    } else {
+        return TAKING_OFF;
     }
 }
 
 //********************************************************
-// flyController - Flys helicopter checking for switch.
+// flight - Flys helicopter checking for switch.
 //********************************************************
-void
+enum state
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
     if (!mainRotor->state || !tailRotor->state)
@@ -125,14 +122,16 @@ flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawErr
 
     if (checkButton(SW) == RELEASED)
     {
-        heliState = LANDING;
+        return LANDING;
+    } else {
+        return FLYING;
     }
 }
 
 //********************************************************
 // land - Lands helicopter at reference angle.
 //********************************************************
-void
+enum state
 land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError, int16_t mappedAlt)
 {
     if (!mainRotor->state || !tailRotor->state)
@@ -145,6 +144,7 @@ land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError
 
     if (mappedAlt < 1)
     {
-        heliState = LANDED;
-    }
+        return LANDED;
+    } else
+        return LANDING;
 }
