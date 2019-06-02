@@ -18,119 +18,139 @@
 #include "motorControl.h"
 #include "yaw.h"
 
-//********************************************************
-// Global Vars
-//********************************************************
-int32_t PWMLastMain = 0;              //"
-int32_t PWMLastTail = 0;              //
-
 //*****************************************************************************
-// Function to update motor duty cycles to reduce error values to zero.
+// altController - Function to update main motor duty cycle to reduce alt error
+// value to zero using PID control
 //*****************************************************************************
-// PID controller for the main motor
 void
-mainController(rotor_t *mainRotor, int32_t error)
+altController(rotor_t *mainRotor, int32_t error)
 {
-    // Scales the values up by a constant so for example 1000 * 0.01 can be 1010 instead of 1 * 0.01 getting 1.01
-    // because decimals are inacurate and even small changes from rounding could be a problem
+    // Scales the values up by a constant so integers can be used. This removes rounding errors.
     int32_t errorIntMax = 1000 * DUTYSCALER;
     int32_t errorIntMin = 0;
-    int16_t pwmMaxMain = 60;
     float Kp = 0.2;
     float Ki = 0.1;
     float Kd = 0.2;
 
-    // Proportional: The error times the proportional coefficent (Kp)
+    // Proportional: The error times the proportional gain (Kp)
     int32_t P = error * Kp;
 
-    // Add the current Error to the error integral
-    if (mainRotor->duty < pwmMaxMain)
+    // Add the current Error to the error integral if current speed is less than maximum.
+    // This removes integral windup.
+    if (mainRotor->duty < PWM_MAX_MAIN)
     {
-        altErrorInt += error / DUTYSCALER;
+        altErrorInt += (2 * error + DUTYSCALER) / 2 / DUTYSCALER;
     }
 
-    // Limit the summed error to between i_max and i_min
-    if (altErrorInt > errorIntMax) altErrorInt = errorIntMax;
-    else if (altErrorInt < errorIntMin) altErrorInt = errorIntMin;
+    // Limit the summed error to between maximum and minimum values.
+    if (altErrorInt > errorIntMax)
+    {
+        altErrorInt = errorIntMax;
+    }
+    else if (altErrorInt < errorIntMin)
+    {
+        altErrorInt = errorIntMin;
+    }
 
-    // Integral: Multiply the sum by the integral coefficent (Ki)
+    // Integral: Multiply the error sum by the integral gain (Ki)
     int32_t I = Ki * altErrorInt;
 
-    // Derivative: Calculate change in error between now and last time through the controller
-    // then multiply by the differential coefficent (Kd)
+    // Derivative: Calculate change in error between now and previous operation,
+    // then multiply by the differential gain (Kd)
     double D = Kd * (altErrorPrev - error);
 
-    // Store error to be used to calculate the change next time
+    // Store error to be used to calculate the derivative change next time
     altErrorPrev = error;
 
-    // Combine the proportional, integral and derivative components and then scales back down.
-    //      (looking at it again im not sure why this isn't just "P + I + D" as the previous
-    //      duty cycle shouldn't matter, I'll test changing this)
-    int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
+    // Combine the proportional, integral and derivative components and then scales
+    // back down using integer division. This reduces rounding error.
+    int32_t PWM_Duty = (2 * (P + I + D) + DUTYSCALER) / 2 / DUTYSCALER;
 
-    // Limit the duty cycle to between 95 and 5
-    if (PWM_Duty > pwmMaxMain) PWM_Duty = pwmMaxMain;
-    else if (PWM_Duty < 25) PWM_Duty = 25;
+    // Limit the duty cycle to between maximum and minimum values.
+    if (PWM_Duty > PWM_MAX_MAIN)
+    {
+        PWM_Duty = PWM_MAX_MAIN;
+    }
+    else if (PWM_Duty < PWM_MIN_MAIN)
+    {
+        PWM_Duty = PWM_MIN_MAIN;
+    }
 
-    PWMLastMain = PWM_Duty;
-
+    // Set the motor to calculated new duty cycle.
     mainRotor->duty = PWM_Duty;
     setPWM(mainRotor);
 }
 
-// PID controller for the tail motor [ See above for comments ]
+//*****************************************************************************
+// yawController - Function to update tail motor duty cycle to reduce yaw error
+// value to zero using PID control
+//*****************************************************************************
 void
-tailController(rotor_t *tailRotor, int32_t error)
+yawController(rotor_t *tailRotor, int32_t error)
 {
+    // Scales the values up by a constant so integers can be used. This removes rounding errors.
     int32_t errorIntMax = 10000 * DUTYSCALER;
     int32_t errorIntMin = 0;
     float Kp = 0.5;
     float Ki = 0.09;
     float Kd = 0.1;
 
-    // Proportional
+    // Proportional: The error times the proportional gain (Kp)
     int32_t P = error * Kp;
 
-    // Integral
+    // Add the current Error to the error integral if current speed is less than maximum
+    // and more than minimum. This removes integral windup.
     if (tailRotor->duty < PWM_MAX && tailRotor->duty > PWM_MIN)
     {
-        yawErrorInt += error / DUTYSCALER;
+        yawErrorInt += (2 * error + DUTYSCALER) / 2 / DUTYSCALER;
     }
 
-    // Limit sum
-    if (yawErrorInt > errorIntMax) yawErrorInt = errorIntMax;
-    else if (yawErrorInt < errorIntMin) yawErrorInt = errorIntMin;
+    // Limit the summed error to between maximum and minimum values.
+    if (yawErrorInt > errorIntMax)
+    {
+        yawErrorInt = errorIntMax;
+    }
+    else if (yawErrorInt < errorIntMin)
+    {
+        yawErrorInt = errorIntMin;
+    }
 
-    // Integral
+    // Integral: Multiply the error sum by the integral gain (Ki)
     int32_t I = Ki * yawErrorInt;
 
-    // Derivative
+    // Derivative: Calculate change in error between now and previous operation,
+    // then multiply by the differential gain (Kd)
     double D = Kd * (yawErrorPrev - error);
     yawErrorPrev = error;
 
-    int32_t PWM_Duty = (P + I + D) / DUTYSCALER;
+    // Combine the proportional, integral and derivative components and then scales
+    // back down using integer division. This reduces rounding error.
+    int32_t PWM_Duty = (2 * (P + I + D) + DUTYSCALER) / 2 / DUTYSCALER;
 
-    // Limit PWM to specification
-    if (PWM_Duty > PWM_MAX) PWM_Duty = PWM_MAX;
-    else if (PWM_Duty < PWM_MIN) PWM_Duty = PWM_MIN;
+    // Limit the duty cycle to between maximum and minimum values.
+    if (PWM_Duty > PWM_MAX)
+    {
+        PWM_Duty = PWM_MAX;
+    }
+    else if (PWM_Duty < PWM_MIN)
+    {
+        PWM_Duty = PWM_MIN;
+    }
 
-    PWMLastTail = PWM_Duty;
-
+    // Set the motor to calculated new duty cycle.
     tailRotor->duty = PWM_Duty;
     setPWM(tailRotor);
 }
 
 
-//********************************************************
+//*****************************************************************************
 // fly - Controls heli to desired position and angle
-//********************************************************
+//*****************************************************************************
 void
 fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
-    if (!debug) {
-        mainController (mainRotor, altError);
-    }
-    tailController (tailRotor, yawError);
+    altController (mainRotor, altError);
+    yawController (tailRotor, yawError);
 }
 
 //*****************************************************************************
@@ -149,6 +169,7 @@ integrate(int32_t altError, int32_t yawError)
 int32_t
 calcAltError(int32_t desiredAlt, int32_t actualAlt)
 {
+    // Scales the values up by a constant so integers can be used. This removes rounding errors.
     return (desiredAlt * DUTYSCALER) - (actualAlt * DUTYSCALER);
 }
 
@@ -158,6 +179,7 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt)
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw)
 {
+    // Scales the values up by a constant so integers can be used. This removes rounding errors.
     int32_t error = (desiredYaw * DUTYSCALER) - (YAW_DEG(actualYaw) * DUTYSCALER);
 
     return error;

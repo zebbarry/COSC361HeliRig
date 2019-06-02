@@ -112,6 +112,9 @@ initAltitude (uint16_t altRaw)
     return altRaw - ALT_RANGE;
 }
 
+//********************************************************
+// updateAltTask - Updates altitude value by averaging the samples.
+//********************************************************
 static void
 updateAltTask (heli_t *data)
 {
@@ -133,6 +136,10 @@ updateAltTask (heli_t *data)
     }
 }
 
+//********************************************************
+// heliInfoOutputTask - Outputs varius important information
+// about helicopter via UART and OLED display.
+//********************************************************
 static void
 heliInfoOutputTask (heli_t *data)
 {
@@ -144,22 +151,33 @@ heliInfoOutputTask (heli_t *data)
     }
 }
 
+//********************************************************
+// stateMachineTask - Controls helicopter state, using PID
+// control to hold altitude and yaw at desired values.
+// Lands and takes off helicopter depending on state of switch.
+//********************************************************
 static void
 stateMachineTask (heli_t *data)
 {
     heli_t *heli = data;
-
     int32_t yawError;
     int32_t altError;
 
-    // FSM based on SW1, orientation and altitude.
+    // FSM for different helicopter states.
+    // Uses switch inputs, orientation and elevation to control
+    // helicopter state.
     switch (heli->heliState)
     {
+    // LANDED - Turn motors off, check for upwards SW change to
+    //          move to TAKING_OFF
     case LANDED:    // Turn motors off and check for SW change
         heli->desiredAlt = 0;
         heli->heliState = landed (heli->mainRotor, heli->tailRotor);
         break;
 
+    // TAKING_OFF - Turn on motors and rotate until yaw reference
+    //              point found then switch to FLYING. Disable yawRefInt
+    //              once state changes.
     case TAKING_OFF:    // Hover and find yaw ref
         heli->heliState = takeOff (heli->mainRotor, heli->tailRotor);
 
@@ -169,6 +187,9 @@ stateMachineTask (heli_t *data)
         }
         break;
 
+    // FLYING - Control heli height and yaw using PID control,
+    //          adjusting desired position based on button inputs.
+    //          Change to LANDING when SW move to down.
     case FLYING:    // Fly to desired position and check for SW change
         heli->desiredAlt = updateDesiredAlt (heli->desiredAlt);
         heli->desiredYaw = updateDesiredYaw (heli->desiredYaw);
@@ -182,6 +203,9 @@ stateMachineTask (heli_t *data)
         }
         break;
 
+    // LANDING - Reduce desired height by DROP_ALT_STEP at 8Hz,
+    //           maintaining desired yaw of 0.
+    //           Move to LANDED once altitude is within 2%.
     case LANDING:   // Land Heli and change to LANDED once alt < 1%
         if (heli->desiredAlt - DROP_ALT_STEP > 0) {
             heli->desiredAlt = heli->desiredAlt - DROP_ALT_STEP;

@@ -23,13 +23,14 @@
 //*****************************************************************************
 // Constants
 //*****************************************************************************
-#define HOVER_DUTY_MAIN     25     // Hover duty cycle for main
-#define ROTATE_DUTY_TAIL    28     // Hover duty cycle for tail
+#define ROTATE_DUTY_TAIL    28     // Rotate duty cycle for tail
 #define TIME_STEP           1000   // Time step between samples of derivative
-#define DROP_ALT_STEP       4
-#define DUTYSCALER 1000
+#define DROP_ALT_STEP       4      // Altitude drop step when landing
+#define DUTYSCALER 1000            // Prescaler for error so integers can be used.
 #define PWM_MIN    5
 #define PWM_MAX    70
+#define PWM_MAX_MAIN 60
+#define PWM_MIN_MAIN 25
 
 //*****************************************************************************
 // Global variables
@@ -38,21 +39,26 @@ static int32_t yawErrorInt;
 static int32_t altErrorInt;
 static int32_t yawErrorPrev;
 static int32_t altErrorPrev;
-static bool debug = false;
 
 //*****************************************************************************
-// Function to update motor duty cycles to reduce error values to zero.
+// altController - Function to update main motor duty cycle to reduce alt error
+// value to zero using PID control
 //*****************************************************************************
-/*
 void
-updateMotors(rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
-*/
+altController(rotor_t *mainRotor, int32_t error);
 
+//*****************************************************************************
+// yawController - Function to update tail motor duty cycle to reduce yaw error
+// value to zero using PID control
+//*****************************************************************************
 void
-mainController(rotor_t *mainRotor, int32_t error);
+yawController(rotor_t *tailRotor, int32_t error);
 
+//*****************************************************************************
+// fly - Controls heli to desired position and angle
+//*****************************************************************************
 void
-tailController(rotor_t *tailRotor, int32_t error);
+fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
 
 //*****************************************************************************
 // Function to integrate yaw and altitude error.
@@ -71,11 +77,5 @@ calcAltError(int32_t desiredAlt, int32_t actualAlt);
 //*****************************************************************************
 int32_t
 calcYawError(int32_t desiredYaw, int32_t actualYaw);
-
-//********************************************************
-// fly - Controls heli to desired position and angle
-//********************************************************
-void
-fly (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError);
 
 #endif /* MOTORCONTROL_H_ */

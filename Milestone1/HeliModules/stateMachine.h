@@ -32,7 +32,7 @@
 //********************************************************
 enum state {LANDED = 0, TAKING_OFF, FLYING, LANDING};
 enum state heliState;
-typedef struct heli_struct
+typedef struct heli_struct_t
 {
     rotor_t *mainRotor;
     rotor_t *tailRotor;

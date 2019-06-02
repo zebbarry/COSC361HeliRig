@@ -28,15 +28,18 @@
 
 
 //*****************************************************************************
-// The handler for the pin change interrupts for pin A and B
+// yawIntHandler - The handler for the pin change interrupts for pin A and B.
+// Uses quadrature decoding to measure yaw value
 //*****************************************************************************
 void
 yawIntHandler(void)
 {
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE, true);
 
+    // Read current pin states
     currentState = GPIOPinRead(YAW_PORT_BASE, YAW_PIN_A | YAW_PIN_B);
 
+    // Check current button states and therefore determine direction based on previous state.
     switch (currentState)
     {
     case BOTH_ZERO:
@@ -73,23 +76,27 @@ yawIntHandler(void)
         break;
     }
 
+    // Change yaw value by stated direction and save previous button states
     yaw += dir;
     previousState = currentState;
 
+    // Clear interrupt
     GPIOIntClear(YAW_PORT_BASE, intStatus);
 }
 
 //*****************************************************************************
-// The handler for the reference pin change for PC4.
+// yawRefIntHandler - The handler for the reference pin change for PC4. Resets yaw.
 //*****************************************************************************
 void
 yawRefIntHandler(void)
 {
     uint32_t intStatus = GPIOIntStatus(YAW_PORT_BASE_REF, true);
 
+    // Set reference flag true and reset yaw value
     hitYawRef = true;
     yaw = 0;
 
+    // Clear interrupt
     GPIOIntClear(YAW_PORT_BASE_REF, intStatus);
 }
 
@@ -112,7 +119,7 @@ yawRefIntEnable(void)
 }
 
 //********************************************************
-// initYaw - Initialise yaw pins
+// initYaw - Initialise yaw pins and register interrupt handlers
 //********************************************************
 void
 initYaw (void)
@@ -148,15 +155,20 @@ initYaw (void)
 }
 
 //********************************************************
-// mapYaw2Deg - Maps yaw value from raw input to degrees.
+// mapYaw2Deg - Maps yaw value from raw input to degrees from range -180 to 180.
 //********************************************************
 int16_t
-mapYaw2Deg(int32_t yawVal, bool deg)
+mapYaw2Deg(int32_t yawVal, bool alreadyInDeg)
 {
-    if (!deg) {
+    // Check if already in degrees, otherwise convert
+    if (!alreadyInDeg) {
         yawVal = YAW_DEG(yawVal);
     }
+
+    // Reduce yaw value to within one full loop.
     int16_t scaledYaw = yawVal % DEG_CIRC;
+
+    // Restrict range to between -180 to 180
     int16_t mappedYaw = scaledYaw;
     if (abs(scaledYaw) > (DEG_CIRC / 2)) {
         if (scaledYaw > 0) {

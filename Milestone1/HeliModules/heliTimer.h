@@ -5,16 +5,13 @@
 //
 // heliTimer.h
 //
+// Helicopter project
+// Group: A03 Group 10
+// Last edited: 30-05-2018 by Thomas M
+//
 // Purpose: More accurate timer for delays and loop timing using a
 // 32-bit down counter and timer 5.
-//
-// Author:  Zeb Barry           ID: 79313790
-// Author:  Mitchell Hollows    ID: 23567059
-// Author:  Jack Topliss        ID: 46510499
-// Group:   Thu am 22
-// Last modified:   22.5.2019
-//
-// *******************************************************
+// ************************************************************
 
 #include <stdint.h>
 #include <stdbool.h>

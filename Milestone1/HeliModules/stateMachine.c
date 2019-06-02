@@ -27,14 +27,19 @@
 int16_t
 updateDesiredAlt(int16_t desiredAlt)
 {
+    // Increase desired altitude if UP button pressed.
     if (checkButton(UP) == PUSHED && desiredAlt < ALT_MAX_PER)
     {
         desiredAlt += ALT_STEP_PER;
+        // Reset integral
         altErrorInt = 0;
     }
+
+    // Decrease desired altitude if DOWN button pressed.
     if (checkButton(DOWN) == PUSHED && desiredAlt > ALT_MIN_PER)
     {
         desiredAlt -= ALT_STEP_PER;
+        // Reset integral
         altErrorInt = 0;
     }
     return desiredAlt;
@@ -46,15 +51,19 @@ updateDesiredAlt(int16_t desiredAlt)
 int32_t
 updateDesiredYaw(int32_t desiredYaw)
 {
+    // Increase desired yaw if RIGHT button pressed.
     if (checkButton(RIGHT) == PUSHED)
     {
         desiredYaw += YAW_STEP_DEG;
+        // Reset integral
         yawErrorInt = 0;
     }
 
+    // Decrease desired yaw if LEFT button pressed.
     if (checkButton(LEFT) == PUSHED)
     {
         desiredYaw -= YAW_STEP_DEG;
+        // Reset integral
         yawErrorInt = 0;
     }
     return desiredYaw;
@@ -67,12 +76,14 @@ updateDesiredYaw(int32_t desiredYaw)
 enum state
 landed (rotor_t *mainRotor, rotor_t *tailRotor)
 {
+    // If motors are on, turn off.
     if (mainRotor->state || tailRotor->state)
     {
         motorPower (mainRotor, false);
         motorPower (tailRotor, false);
     }
 
+    // Check for SW change to trigger state change
     if (checkButton(SW) == PUSHED)
     {
         return TAKING_OFF;
@@ -87,9 +98,11 @@ landed (rotor_t *mainRotor, rotor_t *tailRotor)
 enum state
 takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 {
-    if (!mainRotor->state || !tailRotor->state || mainRotor->duty != HOVER_DUTY_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
+    // Check motors are turned on and with correct duty cycles
+    if (!mainRotor->state || !tailRotor->state ||
+            mainRotor->duty != PWM_MIN_MAIN || tailRotor->duty != ROTATE_DUTY_TAIL)
     {
-        mainRotor->duty = HOVER_DUTY_MAIN;
+        mainRotor->duty = PWM_MIN_MAIN;
         tailRotor->duty = ROTATE_DUTY_TAIL;
         setPWM (mainRotor);
         setPWM (tailRotor);
@@ -97,6 +110,7 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
         motorPower (tailRotor, true);
     }
 
+    // If yaw reference flag is true, change state
     if (hitYawRef)
     {
         hitYawRef = false;
@@ -112,14 +126,17 @@ takeOff (rotor_t *mainRotor, rotor_t *tailRotor)
 enum state
 flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError)
 {
+    // Check if motors are on.
     if (!mainRotor->state || !tailRotor->state)
     {
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
     }
 
+    // Fly helicopter, controlling motors using PID control from error values.
     fly (mainRotor, tailRotor, altError, yawError);
 
+    // If SW changed to down, land heli.
     if (checkButton(SW) == RELEASED)
     {
         return LANDING;
@@ -134,15 +151,18 @@ flight (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawErr
 enum state
 land (rotor_t *mainRotor, rotor_t *tailRotor, int32_t altError, int32_t yawError, int16_t mappedAlt)
 {
+    // Check if motors are on.
     if (!mainRotor->state || !tailRotor->state)
     {
         motorPower (mainRotor, true);
         motorPower (tailRotor, true);
     }
 
+    // Fly helicopter, controlling motors using PID control from error values.
     fly (mainRotor, tailRotor, altError, yawError);
 
-    if (mappedAlt < 1)
+    // If altitude falls to below 2%, change to landed state
+    if (mappedAlt < 2)
     {
         return LANDED;
     } else

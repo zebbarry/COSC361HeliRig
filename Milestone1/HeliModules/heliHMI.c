@@ -52,11 +52,11 @@ handleUART (heli_t *heli)
 
     // Form and send a status message for yaw to the console
     int16_t mappedDesiredYaw = mapYaw2Deg (heli->desiredYaw, true);
-
     usnprintf (statusStr, sizeof(statusStr), "YAW: %3d [%3d]\r\n",
                heli->mappedYaw, mappedDesiredYaw);
     UARTSend (statusStr);
 
+    // Form and send a status message for rotor duty cycles
     if (heli->mainRotor->state && heli->tailRotor->state)
     {
         usnprintf (statusStr, sizeof(statusStr), "MAIN %2d TAIL %2d\r\n",
@@ -68,7 +68,6 @@ handleUART (heli_t *heli)
 
     // Send status message about helicopter state
     char *state[] = {"LANDED", "TAKE OFF", "FLYING", "LANDING", "ERROR"};
-
     // Leave enough space for the template, state and null terminator.
     usnprintf (statusStr, sizeof(statusStr), "HELI: %s\r\n\n", state[heliState]);
     UARTSend (statusStr);
